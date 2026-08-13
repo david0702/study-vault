@@ -2471,7 +2471,7 @@ window.VAULT = {
           text = text.replace(
             /`([^`]+?)`/g,
             (_, c) =>
-              `\uE000C${codes.push(`<code>${esc(c)}</code>`) - 1}\u0000`,
+              `\uE000C${codes.push(`<code>${esc(c)}</code>`) - 1}\uE000`,
           );
 
           const maths = [];
