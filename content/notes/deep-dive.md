@@ -63,16 +63,12 @@ except Exception:
 
 ### 写入：write()
 
-构建不是「生成新文件」，而是「在模板的固定插槽里替换数据」：
+构建不是「生成新文件」，而是「在模板的固定插槽里替换数据」：`build.py` 定位到 `index.html` 里那段带 `id="vault-data"` 的 script 标签块，把里面的内容整体替换成新的 JSON。所以 `index.html` 既是源码又是产物，HTML/CSS/JS 永远不变，只有 JSON 数据在变。
 
-```text
-index.html:
-  VAULT:START
-  window.VAULT = { ... }   ← 只替换这两个标记之间
-  VAULT:END
-```
-
-所以 `index.html` 既是源码又是产物，编译前后是同一个文件。HTML/CSS/JS 永远不变，只有 JSON 数据在变。
+> [!warning] 一个真实的脆弱点案例
+> 早期版本用 `/*VAULT:START*/` 和 `/*VAULT:END*/` 两个注释做分隔符，靠 `split()` 定位。结果写这篇笔记时，正文里恰好出现了这两个字符串，`split()` 切错了位置，把 `window.VAULT` 写坏，整个站显示成「The vault is empty」。
+>
+> 教训：**「讲解代码机制的文档，其内容不能触发那个机制」**。后来把定位方式改成直接锚定 `id="vault-data"` 的 script 标签块，才彻底摆脱这个坑。
 
 ## 数据模型与索引
 
