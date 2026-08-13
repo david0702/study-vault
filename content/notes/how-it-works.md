@@ -101,6 +101,6 @@ content/notes/*.md          content/vault.json
 - 配色 → 改 `index.html` 顶部 `:root` 里的 `--accent`
 - 加笔记 → 往 `content/notes/` 扔一个 `.md`，跑 `python3 build.py`
 
-想继续探索，看 [[welcome]]、[[getting-started]]、[[markdown-guide]]。
+想继续探索，看 [[welcome]]、[[getting-started]]、[[markdown-guide]]；想看更深的原理拆解，读 [[deep-dive|工作原理详解]]。
 
 #tutorial #architecture
