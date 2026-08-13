@@ -2444,7 +2444,7 @@ window.VAULT = {
             .trim()
             .replace(/[`*_~$\\]/g, "")
             .replace(/<[^>]+>/g, "")
-            .replace(/[^\w\s-]/g, "")
+            .replace(/[^\p{L}\p{N}\s-]/gu, "")
             .replace(/\s+/g, "-")
             .replace(/-+/g, "-")
             .replace(/^-|-$/g, "");
@@ -2674,7 +2674,7 @@ window.VAULT = {
               if (level >= 2)
                 headings.push({id, level, text: raw.replace(/[*_`]/g, "")});
               out.push(
-                `<h${level} id="${id}">${inline(raw, ctx)}<a class="anchor" href="#${id}" aria-label="Link to section">#</a></h${level}>`,
+                `<h${level} id="${id}">${inline(raw, ctx)}<a class="anchor" href="#${id}" data-id="${id}" aria-label="Link to section">#</a></h${level}>`,
               );
               i++;
               continue;
@@ -3768,6 +3768,22 @@ window.VAULT = {
               : "smooth",
           });
         }
+
+        // heading anchor links: jump to the section without triggering the router
+        document.addEventListener("click", (e) => {
+          const a = e.target.closest("a.anchor");
+          if (!a) return;
+          e.preventDefault();
+          const t = document.getElementById(a.dataset.id);
+          if (t) {
+            scrollToEl(t);
+            history.replaceState(
+              null,
+              "",
+              location.hash.split("?")[0] + "?h=" + a.dataset.id,
+            );
+          }
+        });
 
         /* ---------- code copy + pdf ---------- */
         function wireCode() {
