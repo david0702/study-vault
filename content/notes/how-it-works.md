@@ -37,7 +37,7 @@ content/notes/*.md          content/vault.json
               build.py
                    │  把结果写成 window.VAULT = {...}
                    ▼
-     index.html 里 /*VAULT:START*/ 和 /*VAULT:END*/ 之间
+     index.html 里 VAULT:START 和 VAULT:END 两个标记之间
 ```
 
 核心约定：**文件名就是笔记的 ID**。`bayes-theorem.md` 会被别处用 `[[bayes-theorem]]` 引用，`_` 开头的文件（如 `_template.md`）不发布。

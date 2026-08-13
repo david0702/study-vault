@@ -107,12 +107,19 @@ def collect():
 
 def write(vault):
     html = INDEX.read_text(encoding="utf-8")
-    if START not in html or END not in html:
-        sys.exit("index.html is missing the /*VAULT:START*/ … /*VAULT:END*/ markers.")
     payload = "window.VAULT = " + json.dumps(vault, ensure_ascii=False, indent=1) + ";"
-    head, rest = html.split(START, 1)
-    _, tail = rest.split(END, 1)
-    INDEX.write_text(f"{head}{START}\n{payload}\n{END}{tail}", encoding="utf-8")
+    # Replace the content of the <script id="vault-data"> block. Anchoring on
+    # the script element (rather than the /*VAULT:START*/ comment markers) is
+    # robust even when a note body happens to contain marker-like text.
+    new_html, n = re.subn(
+        r'(<script id="vault-data">)[\s\S]*?(</script>)',
+        lambda m: m.group(1) + "\n" + payload + "\n" + m.group(2),
+        html,
+        count=1,
+    )
+    if n == 0:
+        sys.exit('index.html is missing the <script id="vault-data"> block.')
+    INDEX.write_text(new_html, encoding="utf-8")
 
 
 def main():

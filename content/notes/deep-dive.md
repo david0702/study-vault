@@ -67,9 +67,9 @@ except Exception:
 
 ```text
 index.html:
-  /*VAULT:START*/
+  VAULT:START
   window.VAULT = { ... }   ← 只替换这两个标记之间
-  /*VAULT:END*/
+  VAULT:END
 ```
 
 所以 `index.html` 既是源码又是产物，编译前后是同一个文件。HTML/CSS/JS 永远不变，只有 JSON 数据在变。
