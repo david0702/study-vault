@@ -16,6 +16,7 @@ This is a **zero-dependency notes site**: write Markdown files, run one command,
 
 - [[getting-started|Getting started]] — how to add, edit, and organise notes
 - [[markdown-guide|Markdown guide]] — every syntax this site supports
+- [[how-it-works|How it works]] — the principles behind this single-file site
 
 ## Conventions
 
