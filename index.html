@@ -3361,7 +3361,7 @@
             )
             .join("");
         }
-        function rightPanel(html, title = "Outline") {
+        function rightPanel(html, title = "Note") {
           $("#rightTitle").textContent = title;
           $("#rightBody").innerHTML = html;
         }
@@ -3668,7 +3668,7 @@
           rightPanel(
             `
     ${
-      headings.length
+      headings.length && !document.getElementById("sideToc")
         ? `<div class="rblock"><h4>On this page</h4>
       <ul class="outline" id="outline">${headings
         .map(
@@ -3705,7 +3705,7 @@
         : ""
     }
   `,
-            "Outline",
+            "Note",
           );
 
           const leftList = $("#outlineLeft"),
@@ -3779,6 +3779,7 @@
           /* scroll fallback: 后台标签页里 smooth 动画可能被节流，350ms 后没到位就直接跳 */
           setTimeout(() => {
             if (Math.abs(view.scrollTop - want) > 8) view.scrollTop = want;
+            view.dispatchEvent(new Event("scroll"));
           }, 350);
         }
 
