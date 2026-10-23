@@ -4,3 +4,7 @@ __pycache__/
 *.tmp
 **/.stfolder/
 
+# 笔记内容不同步到 GitHub
+content/notes/
+vault.json
+mirror/
