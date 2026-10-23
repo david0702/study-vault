@@ -399,6 +399,34 @@
         padding: 12px 12px 28px;
       }
 
+      .side-r .side-body.note-mode {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .side-r .side-body.note-mode .rblock {
+        margin-bottom: 14px;
+      }
+      .side-r .side-body.note-mode .rblock:last-child {
+        margin-bottom: 0;
+      }
+      .side-r .side-body.note-mode .rblock-info {
+        flex: 0 0 auto;
+      }
+      .side-r .side-body.note-mode .rblock-toc {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        padding-bottom: 4px;
+      }
+      .side-r .side-body.note-mode .rblock-extra {
+        flex: 0 0 auto;
+        max-height: 26vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+
       /* vault search */
       .vsearch {
         position: relative;
@@ -3341,7 +3369,9 @@
         }
         function rightPanel(html, title = "Outline") {
           $("#rightTitle").textContent = title;
-          $("#rightBody").innerHTML = html;
+          const rb = $("#rightBody");
+          rb.classList.remove("note-mode");
+          rb.innerHTML = html;
         }
 
         /* ---------- index view ---------- */
@@ -3646,7 +3676,7 @@
         function buildOutline(n, headings) {
           rightPanel(
             `
-    <div class="rblock"><h4>Note info</h4><ul class="meta-list">
+    <div class="rblock rblock-info"><h4>Note info</h4><ul class="meta-list">
       <li><span class="k">Read</span><span class="v" id="readPct">0%</span></li>
       <li><span class="k">Created</span><span class="v">${fmtDate(n.created)}</span></li>
       <li><span class="k">Updated</span><span class="v">${fmtDate(n.updated || n.created)}</span></li>
@@ -3655,7 +3685,7 @@
     </ul><div class="prog"><i id="progBar"></i></div></div>
     ${ /* NOTE INFO 置顶 */
       headings.length
-        ? `<div class="rblock"><h4>On this page</h4>
+        ? `<div class="rblock rblock-toc"><h4>On this page</h4>
       <ul class="outline" id="outline">${headings
         .map(
           (h) =>
@@ -3666,7 +3696,7 @@
     }
     ${
       n.out.size
-        ? `<div class="rblock"><h4>Links out</h4><ul class="meta-list">
+        ? `<div class="rblock rblock-extra"><h4>Links out</h4><ul class="meta-list">
       ${[...n.out]
         .map((s) => bySlug.get(s))
         .map(
@@ -3679,13 +3709,14 @@
     }
     ${
       n.tags.length
-        ? `<div class="rblock"><h4>Tags</h4><div class="chips">
+        ? `<div class="rblock rblock-extra"><h4>Tags</h4><div class="chips">
       ${n.tags.map((t) => `<a class="chip" href="#/tag/${t}">#${MD.esc(t)}</a>`).join("")}</div></div>`
         : ""
     }
   `,
             "Note",
           );
+          $("#rightBody").classList.add("note-mode");
 
           const links = [...document.querySelectorAll("#outline a")];
           const targets = headings
