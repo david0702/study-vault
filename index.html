@@ -2982,7 +2982,23 @@
                 year: "numeric",
               });
         };
-        const readTime = (n) => Math.max(1, Math.round(n.words / 220));
+        const readTime = (n) => {
+          // 中文按字数算（约 400 字/分钟），西文按词算（220 词/分钟）
+          const cjkRe = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g;
+          const cjk = (n.plain.match(cjkRe) || []).length;
+          const latin = n.plain
+            .replace(cjkRe, " ")
+            .split(/\s+/)
+            .filter(Boolean).length;
+          return Math.max(1, Math.round(cjk / 400 + latin / 220));
+        };
+        const readTimeLabel = (n) => {
+          const m = readTime(n);
+          if (m < 60) return m + " 分钟";
+          const h = Math.floor(m / 60),
+            r = m % 60;
+          return r ? h + " 小时 " + r + " 分" : h + " 小时";
+        };
         const byRecent = (a, b) =>
           String(b.updated || b.created || "").localeCompare(
             String(a.updated || a.created || ""),
@@ -3395,7 +3411,7 @@
     <h3>${MD.esc(n.title)}</h3>
     <p>${MD.esc(n.summary || n.plain.slice(0, 190))}</p>
     <div class="card-foot">
-      <span>${readTime(n)} min</span><span class="sep"></span>
+      <span>${readTimeLabel(n)}</span><span class="sep"></span>
       <span>${fmtDate(n.updated || n.created)}</span>
       ${n.tags[0] ? `<span class="sep"></span><span class="tag-mini">#${MD.esc(n.tags[0])}</span>` : ""}
       ${n.in.size ? `<span class="sep"></span><span>${n.in.size} backlink${n.in.size > 1 ? "s" : ""}</span>` : ""}
@@ -3574,7 +3590,7 @@
         ${UNFINISHED[n.slug] ? `<div class="unfinished-note-badge">⚠ 本笔记尚未完成</div>` : ""}
         <div class="note-meta">
           <span>Updated ${fmtDate(n.updated || n.created)}</span><span class="sep"></span>
-          <span>${readTime(n)} min read</span><span class="sep"></span>
+          <span>${readTimeLabel(n)}</span><span class="sep"></span>
           <span>${n.chars.toLocaleString()} 字符</span><span class="sep"></span>
           <span>${n.out.size} out · ${n.in.size} in</span>
         </div>
@@ -3879,7 +3895,7 @@
             const n = bySlug.get(a.dataset.slug);
             if (!n) return;
             peek.innerHTML = `<b>${MD.esc(n.title)}</b><p>${MD.esc(n.summary || n.plain.slice(0, 320))}</p>
-      <div class="pk-meta">${MD.esc(n.folder || "Notes")} · ${readTime(n)} min · ${n.in.size} backlinks</div>`;
+      <div class="pk-meta">${MD.esc(n.folder || "Notes")} · ${readTimeLabel(n)} · ${n.in.size} backlinks</div>`;
             const r = a.getBoundingClientRect();
             peek.style.left =
               Math.min(Math.max(12, r.left), innerWidth - 344) + "px";
