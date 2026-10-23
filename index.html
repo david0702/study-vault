@@ -1565,6 +1565,41 @@
         visibility: hidden;
       }
 
+      /* ---------- Left sidebar: per-document chapters ---------- */
+      .side-toc {
+        border-bottom: 1px solid var(--line-soft);
+        padding: 8px 8px 10px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        max-height: 42vh;
+      }
+      .side-toc-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 0 4px 6px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--faint);
+      }
+      .side-toc-head .count {
+        letter-spacing: 0;
+        font-weight: 500;
+      }
+      .side-toc-body {
+        overflow: auto;
+        min-height: 0;
+      }
+      .side-toc .outline a {
+        font-size: 12.5px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
+
       /* ---------- Right sidebar: outline ---------- */
       .outline {
         list-style: none;
@@ -2272,6 +2307,12 @@
             placeholder="Filter files…"
             aria-label="Filter files"
           />
+        </div>
+        <div class="side-toc" id="sideToc" hidden>
+          <div class="side-toc-head">
+            <span>本文章节</span><span class="count" id="sideTocCount"></span>
+          </div>
+          <div class="side-toc-body"><ul class="outline" id="outlineLeft"></ul></div>
         </div>
         <div class="side-body scroll">
           <ul class="tree" id="tree"></ul>
@@ -3328,6 +3369,7 @@
         /* ---------- index view ---------- */
         let activeTag = null;
         function renderIndex() {
+          { const st = $("#sideToc"); if (st) st.hidden = true; }
           crumbs([{label: DATA.name || "Study Vault"}]);
           const pdfCount = notes.filter((n) => n.pdf).length;
           const linkCount = notes.reduce((s, n) => s + n.out.size, 0);
@@ -3597,6 +3639,7 @@
         }
 
         function renderTag(tag) {
+          { const st = $("#sideToc"); if (st) st.hidden = true; }
           const list = notes.filter((n) => n.tags.includes(tag)).sort(byRecent);
           crumbs([
             {label: DATA.name || "Vault", href: "#/"},
@@ -3665,7 +3708,27 @@
             "Outline",
           );
 
-          const links = [...document.querySelectorAll("#outline a")];
+          const leftList = $("#outlineLeft"),
+            leftWrap = $("#sideToc");
+          if (leftList && leftWrap) {
+            if (headings.length) {
+              leftList.innerHTML = headings
+                .map(
+                  (h) =>
+                    `<li><a class="h${h.level}" href="#${h.id}" data-id="${h.id}">${MD.esc(h.text)}</a></li>`,
+                )
+                .join("");
+              const cnt = $("#sideTocCount");
+              if (cnt) cnt.textContent = String(headings.length);
+              leftWrap.hidden = false;
+            } else {
+              leftList.innerHTML = "";
+              leftWrap.hidden = true;
+            }
+          }
+          const links = [
+            ...document.querySelectorAll("#outline a, #outlineLeft a"),
+          ];
           const targets = headings
             .map((h) => document.getElementById(h.id))
             .filter(Boolean);
@@ -3706,12 +3769,17 @@
           spy();
         }
         function scrollToEl(t) {
+          const want = t.offsetTop - 24;
           view.scrollTo({
-            top: t.offsetTop - 24,
+            top: want,
             behavior: matchMedia("(prefers-reduced-motion:reduce)").matches
               ? "auto"
               : "smooth",
           });
+          /* scroll fallback: 后台标签页里 smooth 动画可能被节流，350ms 后没到位就直接跳 */
+          setTimeout(() => {
+            if (Math.abs(view.scrollTop - want) > 8) view.scrollTop = want;
+          }, 350);
         }
 
         // heading anchor links: jump to the section without triggering the router
