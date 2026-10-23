@@ -3290,6 +3290,25 @@
               f.classList.toggle("active", f.dataset.slug === slug),
             );
         }
+
+        /* tree scroll helpers */
+        function treeBody() {
+          return document.querySelector(".side-l .side-body");
+        }
+        function resetTreeScroll() {
+          const sb = treeBody();
+          if (sb) sb.scrollTop = 0;
+        }
+        function revealActiveFile() {
+          const sb = treeBody();
+          const f = document.querySelector(".file.active");
+          if (!sb || !f) return;
+          const delta =
+            f.getBoundingClientRect().top - sb.getBoundingClientRect().top;
+          const target =
+            sb.scrollTop + delta - sb.clientHeight / 2 + f.offsetHeight / 2;
+          sb.scrollTop = Math.max(0, target);
+        }
         $("#filterInput").addEventListener("input", (e) =>
           buildTree(e.target.value),
         );
@@ -3328,6 +3347,7 @@
         /* ---------- index view ---------- */
         let activeTag = null;
         function renderIndex() {
+          resetTreeScroll();
           crumbs([{label: DATA.name || "Study Vault"}]);
           const pdfCount = notes.filter((n) => n.pdf).length;
           const linkCount = notes.reduce((s, n) => s + n.out.size, 0);
@@ -3532,6 +3552,7 @@
           wirePdf(n);
           buildOutline(n, headings);
           markActive();
+          revealActiveFile();
 
           if (hash) {
             const t = document.getElementById(hash);
@@ -3597,6 +3618,7 @@
         }
 
         function renderTag(tag) {
+          resetTreeScroll();
           const list = notes.filter((n) => n.tags.includes(tag)).sort(byRecent);
           crumbs([
             {label: DATA.name || "Vault", href: "#/"},
