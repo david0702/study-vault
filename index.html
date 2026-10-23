@@ -695,6 +695,13 @@
         --read-w: 100%;
       }
 
+      .note-loading {
+        padding: 120px 0;
+        text-align: center;
+        color: var(--faint);
+        font-size: 13px;
+      }
+
       /* ---------- Index / dashboard ---------- */
       .hero {
         padding: 64px 0 30px;
@@ -2920,7 +2927,20 @@
         };
 
         /* ---------- data ---------- */
-        const DATA = await (await fetch("vault.json", { cache: "no-cache" })).json();
+        async function loadJSON(path) {
+          const r = await fetch(path, { cache: "no-cache" });
+          if (!r.ok) throw new Error(path + " " + r.status);
+          return r.json();
+        }
+        // 2026-10-24 数据拆分：首屏只取元数据清单，正文按需加载 vault-notes/<slug>.json
+        let DATA;
+        let LAZY = true;
+        try {
+          DATA = await loadJSON("vault-index.json");
+        } catch (e) {
+          LAZY = false;
+          DATA = await loadJSON("vault.json");
+        }
         const notes = (DATA.notes || []).map((n) => ({
           ...n,
           tags: n.tags || [],
@@ -2944,14 +2964,23 @@
         notes.forEach((n) => {
           n.out = new Set();
           n.in = new Set();
-          n.plain = MD.plain(n.body);
-          n.words = n.plain.split(/\s+/).filter(Boolean).length;
-          n.chars = [...n.plain].length;
+          if (n.body != null) {
+            n.plain = MD.plain(n.body);
+            n.words = n.plain.split(/\s+/).filter(Boolean).length;
+            n.chars = [...n.plain].length;
+          }
+          if (typeof n.chars !== "number") n.chars = 0;
         });
         notes.forEach((n) => {
+          if (Array.isArray(n.links)) {
+            n.links.forEach((s) => {
+              if (s !== n.slug && bySlug.has(s)) n.out.add(s);
+            });
+            return;
+          }
           let m;
           WIKI.lastIndex = 0;
-          while ((m = WIKI.exec(n.body))) {
+          while (n.body && (m = WIKI.exec(n.body))) {
             const t = resolve(m[1]);
             if (t && t.slug !== n.slug) n.out.add(t.slug);
           }
@@ -2984,6 +3013,10 @@
         };
         const readTime = (n) => {
           // 中文按字数算（约 400 字/分钟），西文按词算（220 词/分钟）
+          // 数据拆分后 cjk/words 由 build.py 预计算；老的全量数据现算
+          if (typeof n.cjk === "number") {
+            return Math.max(1, Math.round(n.cjk / 400 + (n.words || 0) / 220));
+          }
           const cjkRe = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g;
           const cjk = (n.plain.match(cjkRe) || []).length;
           const latin = n.plain
@@ -3409,7 +3442,7 @@
       <span class="folder-tag">${MD.esc(n.folder || "Notes")}</span>
     </div>
     <h3>${MD.esc(n.title)}</h3>
-    <p>${MD.esc(n.summary || n.plain.slice(0, 190))}</p>
+    <p>${MD.esc(n.summary || n.excerpt || "")}</p>
     <div class="card-foot">
       <span>${readTimeLabel(n)}</span><span class="sep"></span>
       <span>${fmtDate(n.updated || n.created)}</span>
@@ -3493,7 +3526,7 @@
           .slice(0, 4)
           .map(
             (n) => `<a class="bl" href="#/n/${n.slug}">
-          <b>${MD.esc(n.title)}</b><span>${MD.esc((n.summary || n.plain).slice(0, 140))}…</span>
+          <b>${MD.esc(n.title)}</b><span>${MD.esc((n.summary || n.excerpt || "").slice(0, 140))}…</span>
           <span style="margin-top:6px;font-size:11.5px;color:var(--faint)">${MD.esc(n.folder || "Notes")} · ${fmtDate(n.updated || n.created)}</span></a>`,
           )
           .join("")}
@@ -3565,9 +3598,20 @@
         }
 
         /* ---------- note view ---------- */
-        function renderNote(slug, hash) {
+        async function renderNote(slug, hash) {
           const n = bySlug.get(slug);
           if (!n) return renderMissing(slug);
+          if (n.body == null) {
+            view.innerHTML = `<div class="pad"><div class="wrap"><div class="note-loading">载入中…</div></div></div>`;
+            try {
+              const d = await loadJSON(
+                `vault-notes/${encodeURIComponent(n.slug)}.json`,
+              );
+              n.body = d.body || "";
+            } catch (e) {
+              return renderMissing(slug);
+            }
+          }
           const {html, headings} = MD.parse(n.body, ctx);
           const sorted = [...notes].sort(byRecent);
           const idx = sorted.findIndex((x) => x.slug === slug);
@@ -3680,6 +3724,8 @@
         }
 
         function mentionSnippet(from, to) {
+          if (!from || from.body == null)
+            return MD.esc((from && (from.summary || from.excerpt)) || "") + "…";
           const re = new RegExp(
             `\\[\\[\\s*(?:${escRe(to.slug)}|${escRe(to.title)})[^\\]]*\\]\\]`,
             "i",
@@ -3894,7 +3940,7 @@
           peekT = setTimeout(() => {
             const n = bySlug.get(a.dataset.slug);
             if (!n) return;
-            peek.innerHTML = `<b>${MD.esc(n.title)}</b><p>${MD.esc(n.summary || n.plain.slice(0, 320))}</p>
+            peek.innerHTML = `<b>${MD.esc(n.title)}</b><p>${MD.esc(n.summary || n.excerpt || "")}</p>
       <div class="pk-meta">${MD.esc(n.folder || "Notes")} · ${readTimeLabel(n)} · ${n.in.size} backlinks</div>`;
             const r = a.getBoundingClientRect();
             peek.style.left =
@@ -3930,7 +3976,7 @@
           if (t.includes(q)) return 80;
           if (s.includes(q)) return 66;
           if (tg.includes(q)) return 54;
-          if (n.plain.toLowerCase().includes(q)) return 30;
+          if ((n.plain || n.excerpt || "").toLowerCase().includes(q)) return 30;
           // subsequence match on title
           let i = 0;
           for (const c of t) if (c === q[i]) i++;

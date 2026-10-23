@@ -8,3 +8,7 @@ __pycache__/
 content/notes/
 vault.json
 mirror/
+
+# 拆分后的数据文件（正文/清单）不进仓库
+vault-notes/
+vault-index.json
