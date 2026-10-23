@@ -3624,7 +3624,14 @@
         function buildOutline(n, headings) {
           rightPanel(
             `
-    ${
+    <div class="rblock"><h4>Note info</h4><ul class="meta-list">
+      <li><span class="k">Read</span><span class="v" id="readPct">0%</span></li>
+      <li><span class="k">Created</span><span class="v">${fmtDate(n.created)}</span></li>
+      <li><span class="k">Updated</span><span class="v">${fmtDate(n.updated || n.created)}</span></li>
+      <li><span class="k">字符</span><span class="v">${n.chars.toLocaleString()}</span></li>
+      <li><span class="k">Backlinks</span><span class="v">${n.in.size}</span></li>
+    </ul><div class="prog"><i id="progBar"></i></div></div>
+    ${ /* NOTE INFO 置顶 */
       headings.length
         ? `<div class="rblock"><h4>On this page</h4>
       <ul class="outline" id="outline">${headings
@@ -3635,13 +3642,6 @@
         .join("")}</ul></div>`
         : ""
     }
-    <div class="rblock"><h4>Note info</h4><ul class="meta-list">
-      <li><span class="k">Read</span><span class="v" id="readPct">0%</span></li>
-      <li><span class="k">Created</span><span class="v">${fmtDate(n.created)}</span></li>
-      <li><span class="k">Updated</span><span class="v">${fmtDate(n.updated || n.created)}</span></li>
-      <li><span class="k">字符</span><span class="v">${n.chars.toLocaleString()}</span></li>
-      <li><span class="k">Backlinks</span><span class="v">${n.in.size}</span></li>
-    </ul><div class="prog"><i id="progBar"></i></div></div>
     ${
       n.out.size
         ? `<div class="rblock"><h4>Links out</h4><ul class="meta-list">
@@ -3662,7 +3662,7 @@
         : ""
     }
   `,
-            "Outline",
+            "Note",
           );
 
           const links = [...document.querySelectorAll("#outline a")];
