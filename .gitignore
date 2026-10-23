@@ -1,0 +1,6 @@
+# build artifacts / local noise
+.build-backups/
+__pycache__/
+*.tmp
+**/.stfolder/
+

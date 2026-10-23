@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# 构建自动留档目录，不对外
+Disallow: /.build-backups/
+
+# 404 页只作为错误页返回
+Disallow: /404.html
