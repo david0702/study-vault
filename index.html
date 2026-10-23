@@ -1594,6 +1594,28 @@
         overflow: auto;
         min-height: 0;
       }
+      .side-toc-head {
+        cursor: pointer;
+        user-select: none;
+      }
+      .side-toc-head:hover {
+        color: var(--ink);
+      }
+      .toc-caret {
+        display: inline-block;
+        width: 10px;
+        transition: transform 0.16s;
+      }
+      .side-toc.collapsed .toc-caret {
+        transform: rotate(-90deg);
+      }
+      .side-toc.collapsed .side-toc-body {
+        display: none;
+      }
+      .side-toc.collapsed {
+        max-height: none;
+        padding-bottom: 6px;
+      }
       .side-toc .outline a {
         font-size: 12.5px;
         padding-top: 5px;
@@ -2309,8 +2331,10 @@
           />
         </div>
         <div class="side-toc" id="sideToc" hidden>
-          <div class="side-toc-head">
-            <span>本文章节</span><span class="count" id="sideTocCount"></span>
+          <div class="side-toc-head" id="tocToggle" role="button" tabindex="0"
+               aria-expanded="true" title="收起 / 展开本文章节">
+            <span class="toc-caret">▾</span><span>本文章节</span>
+            <span class="count" id="sideTocCount"></span>
           </div>
           <div class="side-toc-body"><ul class="outline" id="outlineLeft"></ul></div>
         </div>
@@ -3769,18 +3793,18 @@
           spy();
         }
         function scrollToEl(t) {
-          const want = t.offsetTop - 24;
-          view.scrollTo({
-            top: want,
-            behavior: matchMedia("(prefers-reduced-motion:reduce)").matches
-              ? "auto"
-              : "smooth",
-          });
-          /* scroll fallback: 后台标签页里 smooth 动画可能被节流，350ms 后没到位就直接跳 */
+          // 按容器 rect 差值精确落位（不依赖 smooth，一次点击即到位）
+          const land = () => {
+            const delta = t.getBoundingClientRect().top -
+              view.getBoundingClientRect().top;
+            view.scrollTop = view.scrollTop + delta - 12;
+          };
+          land();
+          requestAnimationFrame(() => requestAnimationFrame(land));
           setTimeout(() => {
-            if (Math.abs(view.scrollTop - want) > 8) view.scrollTop = want;
+            land();
             view.dispatchEvent(new Event("scroll"));
-          }, 350);
+          }, 140);
         }
 
         // heading anchor links: jump to the section without triggering the router
@@ -4319,6 +4343,32 @@
 
         /* ---------- boot ---------- */
         buildTree();
+        {
+          const tocHead = $("#tocToggle"), tocBox = $("#sideToc");
+          if (tocHead && tocBox) {
+            const apply = (collapsed) => {
+              tocBox.classList.toggle("collapsed", collapsed);
+              tocHead.setAttribute("aria-expanded", String(!collapsed));
+              try {
+                localStorage.setItem("sv:tocCollapsed", collapsed ? "1" : "0");
+              } catch {}
+            };
+            let saved = false;
+            try {
+              saved = localStorage.getItem("sv:tocCollapsed") === "1";
+            } catch {}
+            apply(saved);
+            tocHead.addEventListener("click", () =>
+              apply(!tocBox.classList.contains("collapsed")),
+            );
+            tocHead.addEventListener("keydown", (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                apply(!tocBox.classList.contains("collapsed"));
+              }
+            });
+          }
+        }
         if (!notes.length) {
           crumbs([{label: "Study Vault"}]);
           view.innerHTML = `<div class="pad"><div class="wrap" style="padding-top:90px"><div class="empty">
