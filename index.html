@@ -2147,6 +2147,38 @@
       #ft a:hover { color: var(--accent); }
       #ft .sep { margin: 0 6px; color: var(--faint); }
       @media print { #ft { display: none; } }
+
+      /* 左栏底部备案号（2026-10-24 从左下角悬浮挪过来） */
+      .side-foot {
+        flex: 0 0 auto;
+        padding: 8px 14px 10px;
+        border-top: 1px solid var(--line-soft);
+        font: 11px/1.5 var(--sans, ui-sans-serif, sans-serif);
+        color: var(--faint);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .side-foot a {
+        color: var(--faint);
+        text-decoration: none;
+        border-bottom: 1px dotted var(--line);
+      }
+      .side-foot a:hover {
+        color: var(--accent);
+      }
+      /* 桌面端：备案号在左栏底部，隐藏右下角悬浮 */
+      @media (min-width: 861px) {
+        #ft {
+          display: none;
+        }
+      }
+      /* 移动端：侧栏是抽屉，备案号仍用右下角悬浮条 */
+      @media (max-width: 860px) {
+        .side-foot {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body data-left="on" data-right="on" data-width="normal">
@@ -2303,6 +2335,11 @@
         </div>
         <div class="side-body scroll">
           <ul class="tree" id="tree"></ul>
+        </div>
+        <div class="side-foot" id="sideFt">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener"
+            >粤ICP备2026164320号</a
+          >
         </div>
       </aside>
 
