@@ -1,0 +1,2 @@
+# local site health probe every 5 min
+*/5 * * * * root /usr/local/bin/healthcheck-techsite.sh >/dev/null 2>&1

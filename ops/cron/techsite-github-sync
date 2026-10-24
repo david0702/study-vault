@@ -1,0 +1,2 @@
+# 每天把生产站点同步到 GitHub david0702/study-vault
+10 4 * * * root /usr/local/bin/techsite-github-sync.sh >> /var/log/techsite-github-sync.log 2>&1

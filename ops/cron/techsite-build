@@ -1,0 +1,1 @@
+*/5 * * * * www-data /usr/bin/python3 /srv/study-vault/build.py >> /var/log/techsite-build.log 2>&1

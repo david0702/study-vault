@@ -1,0 +1,2 @@
+# daily full backup of techsite + syncthing data (keep 14 days)
+30 3 * * * root /usr/local/bin/backup-techsite.sh >> /var/log/techsite-backup.log 2>&1
