@@ -4412,19 +4412,24 @@
           graph.resize();
         });
         $("#btnGraph").addEventListener("click", () => {
-          const g = $("#graphSec");
-          if (!g) return;
-          g.style.display = "";
-          const go = () => {
+          let tries = 0;
+          const reveal = () => {
             const el = $("#graphSec");
             if (!el) return;
-            el.style.display = "";
+            el.style.display = "block";
+            const c = $("#graph");
+            if (!c) {
+              if (++tries < 25) setTimeout(reveal, 60);
+              return;
+            }
+            graph.restart();
+            setTimeout(() => graph.restart(), 120);
             scrollToEl(el);
           };
           if (!location.hash.match(/^#\/$|^$/)) {
             location.hash = "#/";
-            setTimeout(go, 90);
-          } else go();
+            setTimeout(reveal, 120);
+          } else reveal();
         });
         $("#btnRecent").addEventListener("click", () => {
           location.hash = "#/recent";
@@ -4660,11 +4665,28 @@
               });
             }
           }
+          /* 图区默认隐藏（display:none）→ mount 时尺寸为 0，展开后需要重新播种并模拟 */
+          function restart() {
+            if (!cvs) return;
+            const r = cvs.getBoundingClientRect();
+            if (!r.width || !r.height) return;
+            const R = Math.min(r.width, r.height);
+            nodes.forEach((n, i) => {
+              n.x = Math.cos((i / notes.length) * 6.283) * R * 0.32;
+              n.y = Math.sin((i / notes.length) * 6.283) * R * 0.28;
+              n.vx = n.vy = 0;
+            });
+            ready = true;
+            resize();
+            for (let k = 0; k < 320; k++) step();
+            paint();
+          }
           addEventListener("resize", () => {
             if (ready) resize();
           });
           return {
             mount,
+            restart,
             paint: () => ready && paint(),
             resize: () => ready && resize(),
             get ready() {
