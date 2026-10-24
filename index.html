@@ -704,9 +704,9 @@
 
       /* ---------- Index / dashboard ---------- */
       .hero {
-        padding: 64px 0 30px;
+        padding: 24px 0 16px;
         border-bottom: 1px solid var(--line);
-        margin-bottom: 30px;
+        margin-bottom: 18px;
       }
       .eyebrow {
         display: inline-flex;
@@ -2166,9 +2166,9 @@
       /* 左栏底部备案号（2026-10-24 从左下角悬浮挪过来） */
       .side-foot {
         flex: 0 0 auto;
-        padding: 8px 14px 10px;
-        border-top: 1px solid var(--line-soft);
-        font: 11px/1.5 var(--sans, ui-sans-serif, sans-serif);
+        padding: 4px 14px 8px;
+        border-top: 0;
+        font: 10.5px/1.4 var(--sans, ui-sans-serif, sans-serif);
         color: var(--faint);
         white-space: nowrap;
         overflow: hidden;
@@ -2192,6 +2192,153 @@
       @media (max-width: 860px) {
         .side-foot {
           display: none;
+        }
+      }
+
+      /* ---------- 分章阅读 ---------- */
+      .chap-enter-row {
+        margin: 10px 0 2px;
+      }
+      .chap-enter {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        color: var(--accent-ink);
+        text-decoration: none;
+        border-bottom: 1px dotted var(--line);
+        padding-bottom: 1px;
+      }
+      .chap-kicker {
+        font-size: 12px;
+        color: var(--faint);
+        margin: 0 0 10px;
+      }
+      .chap-kicker a {
+        color: var(--faint);
+        text-decoration: none;
+        border-bottom: 1px dotted var(--line);
+      }
+      .chap-nav {
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 30px 0 10px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line-soft);
+      }
+      .chap-nav a {
+        flex: 1 1 0;
+        display: block;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 12px;
+        text-decoration: none;
+        color: var(--ink);
+        font-size: 13px;
+        line-height: 1.45;
+        background: var(--card-2);
+        transition: border-color 0.14s, color 0.14s;
+      }
+      .chap-nav a:hover {
+        border-color: var(--accent);
+        color: var(--accent-ink);
+      }
+      .chap-nav a small {
+        display: block;
+        font-size: 11px;
+        color: var(--faint);
+        margin-bottom: 3px;
+      }
+      .chap-nav .sp {
+        flex: 0 0 auto;
+        width: 84px;
+        text-align: center;
+        align-self: center;
+        font-size: 12px;
+      }
+      .chap-nav .sp a {
+        display: inline-block;
+        flex: none;
+        border: 0;
+        background: none;
+        padding: 4px;
+        color: var(--muted);
+      }
+
+      /* ---------- 最近更新页 ---------- */
+      .recent-rows {
+        border-top: 1px solid var(--line-soft);
+      }
+      .recent-row {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        padding: 12px 2px;
+        border-bottom: 1px solid var(--line-soft);
+        text-decoration: none;
+        color: var(--ink);
+      }
+      .recent-row:hover b {
+        color: var(--accent-ink);
+      }
+      .recent-row b {
+        font-size: 15px;
+        font-weight: 600;
+        transition: color 0.14s;
+      }
+      .recent-row .rr-meta {
+        color: var(--faint);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .recent-row .rr-date {
+        margin-left: auto;
+        color: var(--faint);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      /* ---------- 移动端目录按钮（桌面隐藏） ---------- */
+      .note-toc-btn {
+        display: none;
+      }
+      @media (max-width: 860px) {
+        .note-toc-btn {
+          display: inline-flex;
+        }
+        /* 手机端顶栏：面包屑收窄、按钮去掉文字 */
+        .crumbs {
+          display: none;
+        }
+        #btnAppear span,
+        #btnSearch2 {
+          display: none;
+        }
+        /* 右侧目录 → 底部 sheet */
+        .side-r {
+          position: fixed;
+          z-index: 60;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          top: auto;
+          height: auto;
+          max-height: 72vh;
+          border-left: 0;
+          border-top: 1px solid var(--line);
+          border-radius: 14px 14px 0 0;
+          box-shadow: var(--shadow-2);
+          transform: translateY(110%);
+          transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+          display: flex;
+        }
+        body[data-right="on"] .side-r {
+          transform: none;
+        }
+        .side-r .side-body {
+          padding-bottom: 18px;
         }
       }
     </style>
@@ -2264,6 +2411,26 @@
             <circle cx="18" cy="9" r="2.4" />
             <circle cx="11" cy="18" r="2.4" />
             <path d="m8.2 8.2 7.3 .3M7.3 9.2l2.7 6.6M16.6 11.1l-4 5.3" />
+          </svg>
+        </button>
+        <button
+          class="rib"
+          id="btnRecent"
+          title="最近更新"
+          aria-label="最近更新"
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="8" />
+            <path d="M12 8v4l3 1.8" />
           </svg>
         </button>
         <button
@@ -2382,6 +2549,12 @@
               <circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2a6 6 0 0 1 0 20"/>
             </svg>
             <span>外观</span>
+          </button>
+          <button class="kbd-hint note-toc-btn" id="btnToc" title="目录" aria-label="目录">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 6h16M4 12h16M4 18h10"/>
+            </svg>
+            <span>目录</span>
           </button>
           <button class="kbd-hint" id="btnSearch2">
             <span>Quick switcher</span> <kbd id="kbdKey">Ctrl K</kbd>
@@ -3011,6 +3184,30 @@
                 year: "numeric",
               });
         };
+        /* 把一篇 Markdown 按二级标题切成章节（不拆文件）。前言并入第一章。 */
+        function splitChapters(body) {
+          const lines = body.split("\n");
+          const secs = [];
+          let cur = { title: "", id: "", md: [] };
+          let fence = false;
+          for (const line of lines) {
+            if (/^```/.test(line.trim())) fence = !fence;
+            const m = !fence && line.match(/^##\s+(.+?)\s*#*\s*$/);
+            if (m) {
+              if (cur.title || cur.md.join("\n").trim()) secs.push(cur);
+              const title = m[1].trim();
+              cur = { title, id: MD.slugify(title), md: [line] };
+            } else cur.md.push(line);
+          }
+          secs.push(cur);
+          if (secs.length && !secs[0].title) {
+            const pre = secs.shift();
+            if (secs.length) secs[0].md = pre.md.concat(secs[0].md);
+            else secs.unshift(pre);
+          }
+          return secs;
+        }
+
         const readTime = (n) => {
           // 中文按字数算（约 400 字/分钟），西文按词算（220 词/分钟）
           // 数据拆分后 cjk/words 由 build.py 预计算；老的全量数据现算
@@ -3470,6 +3667,39 @@
 
         /* ---------- index view ---------- */
         let activeTag = null;
+        function renderRecent() {
+          const list = [...notes].sort(byRecent);
+          crumbs([
+            {label: DATA.name || "Vault", href: "#/"},
+            {label: "最近更新"},
+          ]);
+          document.title = `最近更新 · ${DATA.name || "Study Vault"}`;
+          view.innerHTML = `<div class="pad"><div class="wrap">
+    <header class="hero rise">
+      <span class="eyebrow"><span class="pulse"></span>按最后修改时间排序</span>
+      <h1 class="vault-name">最近更新</h1>
+      <p class="vault-sub">共 ${list.length} 篇笔记，最近一次更新 ${fmtDate(list[0] && (list[0].updated || list[0].created))}。</p>
+    </header>
+    <section class="sec rise d1"><div class="recent-rows">
+      ${list
+        .map(
+          (n) => `<a class="recent-row" href="#/n/${n.slug}">
+        <b>${MD.esc(n.title)}</b>
+        <span class="rr-meta">${MD.esc(n.folder || "Notes")} · ${readTimeLabel(n)}</span>
+        <span class="rr-date">${fmtDate(n.updated || n.created)}</span></a>`,
+        )
+        .join("")}
+    </div></section>
+  </div></div>`;
+          rightPanel(
+            `<div class="rblock"><h4>最近更新</h4>
+       <p style="font-size:12.5px;line-height:1.7;color:var(--muted);margin:0">
+       按「最后修改」倒序。想按栏目浏览请用左栏文件树；想搜关键词按 Ctrl K。</p></div>`,
+            "Recent",
+          );
+          markActive();
+        }
+
         function renderIndex() {
           resetTreeScroll();
           crumbs([{label: DATA.name || "Study Vault"}]);
@@ -3598,7 +3828,7 @@
         }
 
         /* ---------- note view ---------- */
-        async function renderNote(slug, hash) {
+        async function renderNote(slug, hash, chap) {
           const n = bySlug.get(slug);
           if (!n) return renderMissing(slug);
           if (n.body == null) {
@@ -3612,7 +3842,14 @@
               return renderMissing(slug);
             }
           }
-          const {html, headings} = MD.parse(n.body, ctx);
+          const full = MD.parse(n.body, ctx);
+          const headings = full.headings;
+          const chapters = splitChapters(n.body);
+          const inChapter =
+            Number.isInteger(chap) && chap >= 0 && chap < chapters.length;
+          const html = inChapter
+            ? MD.parse(chapters[chap].md.join("\n"), ctx).html
+            : full.html;
           const sorted = [...notes].sort(byRecent);
           const idx = sorted.findIndex((x) => x.slug === slug);
           const prev = sorted[idx - 1],
@@ -3624,7 +3861,29 @@
             {label: n.folder || "Notes"},
             {label: n.title},
           ]);
-          document.title = `${n.title} · ${DATA.name || "Study Vault"}`;
+          document.title = inChapter
+            ? `${chapters[chap].title} · ${n.title} · ${DATA.name || "Study Vault"}`
+            : `${n.title} · ${DATA.name || "Study Vault"}`;
+          const chapEnter =
+            !inChapter && chapters.length > 1
+              ? `<div class="chap-enter-row"><a class="chap-enter" href="#/n/${n.slug}?c=0">按章阅读 · 共 ${chapters.length} 章 →</a></div>`
+              : "";
+          const chapNav = inChapter
+            ? `<nav class="chap-nav">
+        ${
+          chap > 0
+            ? `<a href="#/n/${n.slug}?c=${chap - 1}"><small>上一章</small>${MD.esc(chapters[chap - 1].title)}</a>`
+            : `<span></span>`
+        }
+        <span class="sp"><a href="#/n/${n.slug}">全文</a></span>
+        ${
+          chap < chapters.length - 1
+            ? `<a href="#/n/${n.slug}?c=${chap + 1}"><small>下一章</small>${MD.esc(chapters[chap + 1].title)}</a>`
+            : `<span></span>`
+        }
+      </nav>`
+            : "";
+          n.__chapMode = inChapter;
 
           view.innerHTML = `<div class="pad"><div class="wrap">
     <article class="rise">
@@ -3640,6 +3899,7 @@
         </div>
         ${n.tags.length ? `<div class="note-tags">${n.tags.map((t) => `<a class="chip" href="#/tag/${t}">#${MD.esc(t)}</a>`).join("")}</div>` : ""}
       </header>
+      ${chapEnter}
 
       ${
         n.pdf
@@ -3655,7 +3915,8 @@
           : ""
       }
 
-      <div class="md" id="mdBody">${html}</div>
+      <div class="md" id="mdBody">${inChapter ? `<p class="chap-kicker">${MD.esc(n.folder || "Notes")} / ${chapters.length} 章 · 第 ${chap + 1} 章 <a href="#/n/${n.slug}">查看全文</a></p>` : ""}${html}</div>
+      ${chapNav}
 
       <section class="after">
         <div class="sec-head"><span class="sec-title">Linked from</span><span class="sec-rule"></span>
@@ -3832,6 +4093,13 @@
           links.forEach((a) =>
             a.addEventListener("click", (e) => {
               e.preventDefault();
+              if (n.__chapMode) {
+                const idx = headings.findIndex((h) => h.id === a.dataset.id);
+                if (idx >= 0) {
+                  location.hash = `#/n/${n.slug}?c=${idx}`;
+                  return;
+                }
+              }
               const t = document.getElementById(a.dataset.id);
               if (t) {
                 scrollToEl(t);
@@ -4123,8 +4391,14 @@
 
         $("#sideScrim").addEventListener("click", () => {
           document.body.dataset.left = "off";
+          document.body.dataset.right = "off";
           $("#btnLeft").setAttribute("aria-pressed", "false");
           $("#sideScrim").classList.remove("on");
+        });
+        $("#btnToc").addEventListener("click", () => {
+          const on = document.body.dataset.right === "on";
+          document.body.dataset.right = on ? "off" : "on";
+          $("#sideScrim").classList.toggle("on", !on);
         });
         const widths = ["normal", "wide", "full"];
         $("#btnWidth").addEventListener("click", () => {
@@ -4138,10 +4412,22 @@
           graph.resize();
         });
         $("#btnGraph").addEventListener("click", () => {
+          const g = $("#graphSec");
+          if (!g) return;
+          g.style.display = "";
+          const go = () => {
+            const el = $("#graphSec");
+            if (!el) return;
+            el.style.display = "";
+            scrollToEl(el);
+          };
           if (!location.hash.match(/^#\/$|^$/)) {
             location.hash = "#/";
-            setTimeout(() => $("#graphSec") && scrollToEl($("#graphSec")), 90);
-          } else if ($("#graphSec")) scrollToEl($("#graphSec"));
+            setTimeout(go, 90);
+          } else go();
+        });
+        $("#btnRecent").addEventListener("click", () => {
+          location.hash = "#/recent";
         });
         $("#btnBack").addEventListener("click", () => history.back());
 
@@ -4395,20 +4681,29 @@
           }
           const h = location.hash || "#/";
           const q = h.split("?")[1] || "";
-          const frag = new URLSearchParams(q).get("h");
+          const params = new URLSearchParams(q);
+          const frag = params.get("h");
+          const chapRaw = params.get("c");
+          const chap = chapRaw === null ? null : parseInt(chapRaw, 10);
           let m;
           if ((m = h.match(/^#\/n\/([^?]+)/)))
-            renderNote(decodeURIComponent(m[1]), frag);
+            renderNote(decodeURIComponent(m[1]), frag, chap);
           else if ((m = h.match(/^#\/tag\/([^?]+)/)))
             renderTag(decodeURIComponent(m[1]).toLowerCase());
+          else if (h.startsWith("#/recent")) renderRecent();
           else {
             document.title = DATA.name || "Study Vault";
             renderIndex();
           }
           peek.classList.remove("on");
-          if (innerWidth < 860 && document.body.dataset.left === "on") {
-            document.body.dataset.left = "off";
-            $("#btnLeft").setAttribute("aria-pressed", "false");
+          if (innerWidth < 860) {
+            if (document.body.dataset.left === "on") {
+              document.body.dataset.left = "off";
+              $("#btnLeft").setAttribute("aria-pressed", "false");
+            }
+            if (document.body.dataset.right === "on") {
+              document.body.dataset.right = "off";
+            }
             $("#sideScrim").classList.remove("on");
           }
         }
@@ -4416,6 +4711,10 @@
 
         /* ---------- boot ---------- */
         buildTree();
+        if (innerWidth < 860) {
+          document.body.dataset.left = "off";
+          document.body.dataset.right = "off";
+        }
         if (!notes.length) {
           crumbs([{label: "Study Vault"}]);
           view.innerHTML = `<div class="pad"><div class="wrap" style="padding-top:90px"><div class="empty">
