@@ -2578,7 +2578,7 @@
       <!-- Left: file explorer -->
       <aside class="side side-l" aria-label="File explorer">
         <div class="side-head">
-          <span class="side-title" id="vaultLabel">Study Vault</span>
+          <span class="side-title" id="vaultLabel">个人技术笔记</span>
         </div>
         <div class="vsearch">
           <svg
@@ -3365,9 +3365,9 @@
 
         /* ---------- chrome ---------- */
         let graph;
-        $("#vaultLabel").textContent = DATA.name || "Study Vault";
+        $("#vaultLabel").textContent = DATA.name || "个人技术笔记";
         $("#kbdKey").textContent = isMac ? "⌘ K" : "Ctrl K";
-        document.title = DATA.name || "Study Vault";
+        document.title = DATA.name || "个人技术笔记";
 
         /* ---------- unfinished marker config ---------- */
         const UNFINISHED = {
@@ -3802,7 +3802,7 @@
             {label: DATA.name || "Vault", href: "#/"},
             {label: "最近更新"},
           ]);
-          document.title = `最近更新 · ${DATA.name || "Study Vault"}`;
+          document.title = `最近更新 · ${DATA.name || "个人技术笔记"}`;
           view.innerHTML = `<div class="pad"><div class="wrap">
     <header class="hero rise">
       <span class="eyebrow"><span class="pulse"></span>按最后修改时间排序</span>
@@ -3831,7 +3831,7 @@
 
         function renderIndex() {
           resetTreeScroll();
-          crumbs([{label: DATA.name || "Study Vault"}]);
+          crumbs([{label: DATA.name || "个人技术笔记"}]);
           const pdfCount = notes.filter((n) => n.pdf).length;
           const linkCount = notes.reduce((s, n) => s + n.out.size, 0);
           const chars = notes.reduce((s, n) => s + n.chars, 0);
@@ -3841,7 +3841,7 @@
           view.innerHTML = `<div class="pad"><div class="wrap">
     <header class="hero rise">
       <span class="eyebrow"><span class="pulse"></span>${notes.length} notes · last edited ${fmtDate(recent[0] && (recent[0].updated || recent[0].created))}</span>
-      <h1 class="vault-name">${MD.esc(DATA.name || "Study Vault")}<span class="vault-suffix">：笔记集</span></h1>
+      <h1 class="vault-name">${MD.esc(DATA.name || "个人技术笔记")}<span class="vault-suffix">：笔记集</span></h1>
       <p class="vault-sub">${DATA.tagline || "Everything I'm working through, written in my own words. Read a note in the browser, or take the PDF with you."}</p>
       <a href="/" class="home-btn">← 返回个人主页</a>
       <div class="stats">
@@ -3994,8 +3994,8 @@
             {label: n.title},
           ]);
           document.title = inChapter
-            ? `${chapters[chap].title} · ${n.title} · ${DATA.name || "Study Vault"}`
-            : `${n.title} · ${DATA.name || "Study Vault"}`;
+            ? `${chapters[chap].title} · ${n.title} · ${DATA.name || "个人技术笔记"}`
+            : `${n.title} · ${DATA.name || "个人技术笔记"}`;
           const chapEnter =
             !inChapter && chapters.length > 1
               ? `<div class="chap-enter-row"><a class="chap-enter" href="#/n/${n.slug}?c=0">按章阅读 · 共 ${chapters.length} 章 →</a></div>`
@@ -4174,7 +4174,7 @@
         function renderTag(tag) {
           resetTreeScroll();
           const list = notes.filter((n) => n.tags.includes(tag)).sort(byRecent);
-          document.title = `#${tag} · ${DATA.name || "Study Vault"}`;
+          document.title = `#${tag} · ${DATA.name || "个人技术笔记"}`;
           crumbs([
             {label: DATA.name || "Vault", href: "#/"},
             {label: "#" + tag},
@@ -4981,7 +4981,7 @@
             renderTag(decodeURIComponent(m[1]).toLowerCase());
           else if (h.startsWith("#/recent")) renderRecent();
           else {
-            document.title = DATA.name || "Study Vault";
+            document.title = DATA.name || "个人技术笔记";
             renderIndex();
           }
           peek.classList.remove("on");
