@@ -272,7 +272,6 @@ def main():
     write_json(INDEX_FILE, {
         "name": vault["name"],
         "tagline": vault["tagline"],
-        "generated": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         "notes": index_notes,
     }, "vault-index.json")
 
@@ -290,7 +289,6 @@ def main():
 
     # 4) 全文搜索索引（前端第一次 Ctrl-K 才拉取）
     write_json(SEARCH_FILE, {
-        "generated": datetime.now(TZ).strftime("%Y-%m-%dT%H:%M:%S"),
         "notes": [
             {
                 "slug": n["slug"],
@@ -325,7 +323,7 @@ def main():
     <link>{SITE}/</link>
     <description>{hesc(vault['tagline'] or '个人技术笔记')}</description>
     <language>zh-CN</language>
-    <lastBuildDate>{rfc822(datetime.now(TZ))}</lastBuildDate>
+    <lastBuildDate>{rfc822(recent[0]["updated"] or recent[0]["created"]) if recent else rfc822(datetime.now(TZ))}</lastBuildDate>
     <atom:link href="{SITE}/feed.xml" rel="self" type="application/rss+xml"/>
 {chr(10).join(items)}
   </channel>

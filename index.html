@@ -24,15 +24,6 @@
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="zh_CN" />
     <meta name="twitter:card" content="summary_large_image" />
-    <!-- Optional: math rendering. The site works fine without it (raw TeX is shown instead). -->
-    <link
-      rel="stylesheet"
-      href="/vendor/katex/katex.min.css"
-    />
-    <script
-      defer
-      src="/vendor/katex/katex.min.js"
-    ></script>
 
 
     <link
@@ -45,18 +36,21 @@
    ============================================================ */
 
       @font-face {
+        font-display: swap;
         font-family: "上古明朝体";
         src: url("fonts/ShangguSerifJP-Medium.woff2") format("woff2");
         font-weight: normal;
         font-style: normal;
       }
       @font-face {
+        font-display: swap;
         font-family: "更沙黑体";
         src: url("fonts/Sarasa_Gothic_J.woff2") format("woff2");
         font-weight: 400;
         font-style: normal;
       }
       @font-face {
+        font-display: swap;
         font-family: "更沙黑体";
         src: url("fonts/Sarasa_Gothic_J_Semibold.woff2") format("woff2");
         font-weight: 600;
@@ -70,8 +64,8 @@
         --card-2: #ffffff;
         --ink: #2d2318;
         --ink-2: #4d3f30;
-        --muted: #7a6b58;
-        --faint: #a69884;
+        --muted: #6b5d4c;
+        --faint: #7d7160;
         --line: #e0d5bd;
         --line-soft: #e9dfcb;
         --accent: #c7653c;
@@ -1922,18 +1916,21 @@
       }
       @media (max-width: 1180px) {
         @font-face {
+        font-display: swap;
           font-family: "上古明朝体";
           src: url("fonts/ShangguSerifJP-Medium.woff2") format("woff2");
           font-weight: normal;
           font-style: normal;
         }
         @font-face {
+        font-display: swap;
           font-family: "更沙黑体";
           src: url("fonts/Sarasa_Gothic_J.woff2") format("woff2");
           font-weight: 400;
           font-style: normal;
         }
         @font-face {
+        font-display: swap;
           font-family: "更沙黑体";
           src: url("fonts/Sarasa_Gothic_J_Semibold.woff2") format("woff2");
           font-weight: 600;
@@ -2851,8 +2848,18 @@
           );
           text = text.replace(
             /\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
-            (_, t, href) =>
-              `<a class="ext" href="${href}" target="_blank" rel="noopener">${t}</a>`,
+            (_, t, href) => {
+              // 站内锚点 #xxx：别当外链开新标签（hash 路由下 #xxx 会被当成首页）
+              if (href.startsWith("#")) {
+                const id = href.slice(1);
+                const target =
+                  ctx && ctx.slug
+                    ? `#/n/${ctx.slug}?h=${encodeURIComponent(slugify(id))}`
+                    : href;
+                return `<a class="ilink" href="${target}" data-id="${t ? esc(id) : id}">${t}</a>`;
+              }
+              return `<a class="ext" href="${href}" target="_blank" rel="noopener">${t}</a>`;
+            },
           );
 
           // wikilinks [[slug|label]] / [[slug#heading]]
@@ -2972,7 +2979,11 @@
               if (level >= 2)
                 headings.push({id, level, text: raw.replace(/[*_`]/g, "")});
               out.push(
-                `<h${level} id="${id}">${inline(raw, ctx)}<a class="anchor" href="#${id}" data-id="${id}" aria-label="Link to section">#</a></h${level}>`,
+                `<h${level} id="${id}">${inline(raw, ctx)}<a class="anchor" href="${
+                  ctx && ctx.slug
+                    ? `#/n/${ctx.slug}?h=${encodeURIComponent(id)}`
+                    : `#${id}`
+                }" data-id="${id}" aria-label="Link to section">#</a></h${level}>`,
               );
               i++;
               continue;
@@ -3138,18 +3149,41 @@
             .trim();
         }
 
-        function renderMath(root) {
-          if (!window.katex) return;
-          root.querySelectorAll("[data-tex]").forEach((el) => {
-            try {
-              window.katex.render(el.dataset.tex, el, {
-                displayMode: el.dataset.display === "1",
-                throwOnError: false,
-              });
-            } catch (e) {
-              /* keep the raw source visible */
-            }
+        let katexLoading = null;
+        function loadKatex() {
+          if (window.katex) return Promise.resolve(window.katex);
+          if (katexLoading) return katexLoading;
+          katexLoading = new Promise((resolve, reject) => {
+            const css = document.createElement("link");
+            css.rel = "stylesheet";
+            css.href = "/vendor/katex/katex.min.css";
+            document.head.appendChild(css);
+            const js = document.createElement("script");
+            js.src = "/vendor/katex/katex.min.js";
+            js.onload = () => resolve(window.katex);
+            js.onerror = reject;
+            document.head.appendChild(js);
           });
+          return katexLoading;
+        }
+        function renderMath(root) {
+          const els = root.querySelectorAll("[data-tex]");
+          if (!els.length) return; // 没有公式就不加载 KaTeX
+          const paint = () => {
+            if (!window.katex) return;
+            els.forEach((el) => {
+              try {
+                window.katex.render(el.dataset.tex, el, {
+                  displayMode: el.dataset.display === "1",
+                  throwOnError: false,
+                });
+              } catch (e) {
+                /* keep the raw source visible */
+              }
+            });
+          };
+          if (window.katex) return paint();
+          loadKatex().then(paint).catch(() => {});
         }
 
         return {parse, inline, plain, slugify, renderMath, esc};
@@ -3348,7 +3382,7 @@
             name: "韵", romaji: "Yun",
             light: {
               "--bg": "#f0e8d0", "--surface": "#f5efe0", "--card": "#fdfaf4", "--card-2": "#ffffff",
-              "--ink": "#2d2318", "--ink-2": "#4d3f30", "--muted": "#7a6b58", "--faint": "#a69884",
+              "--ink": "#2d2318", "--ink-2": "#4d3f30", "--muted": "#6b5d4c", "--faint": "#6f6353",
               "--line": "#e0d5bd", "--line-soft": "#e9dfcb",
               "--accent": "#c7653c", "--accent-ink": "#a04528",
               "--accent-soft": "rgba(199,101,60,0.12)", "--accent-line": "rgba(199,101,60,0.34)",
@@ -3360,7 +3394,7 @@
             },
             dark: {
               "--bg": "#594636", "--surface": "#4d3c2e", "--card": "#423326", "--card-2": "#382a1f",
-              "--ink": "#efe4d4", "--ink-2": "#d4c8b4", "--muted": "#a6947e", "--faint": "#8a7a66",
+              "--ink": "#efe4d4", "--ink-2": "#d4c8b4", "--muted": "#d3c6b3", "--faint": "#cbbda9",
               "--line": "#6b5a46", "--line-soft": "#5e4e3c",
               "--accent": "#e89464", "--accent-ink": "#f0b898",
               "--accent-soft": "rgba(232,148,100,0.14)", "--accent-line": "rgba(232,148,100,0.36)",
@@ -3937,13 +3971,16 @@
               return renderMissing(slug);
             }
           }
-          const full = MD.parse(n.body, ctx);
+          const full = MD.parse(n.body, {...ctx, slug: n.slug});
           const headings = full.headings;
           const chapters = splitChapters(n.body);
+          if (Number.isInteger(chap) && chapters.length > 0) {
+            chap = Math.max(0, Math.min(chap, chapters.length - 1));
+          }
           const inChapter =
             Number.isInteger(chap) && chap >= 0 && chap < chapters.length;
           const html = inChapter
-            ? MD.parse(chapters[chap].md.join("\n"), ctx).html
+            ? MD.parse(chapters[chap].md.join("\n"), {...ctx, slug: n.slug}).html
             : full.html;
           const sorted = [...notes].sort(byRecent);
           const idx = sorted.findIndex((x) => x.slug === slug);
@@ -4066,7 +4103,11 @@
           revealActiveFile();
 
           if (hash) {
-            const t = document.getElementById(hash);
+            let t = document.getElementById(hash);
+            if (!t) {
+              const hs = document.querySelectorAll("#mdBody h2[id],#mdBody h3[id],#mdBody h4[id]");
+              t = [...hs].find((h) => h.id.startsWith(hash)) || null;
+            }
             if (t) scrollToEl(t);
           } else view.scrollTop = 0;
         }
@@ -4133,6 +4174,7 @@
         function renderTag(tag) {
           resetTreeScroll();
           const list = notes.filter((n) => n.tags.includes(tag)).sort(byRecent);
+          document.title = `#${tag} · ${DATA.name || "Study Vault"}`;
           crumbs([
             {label: DATA.name || "Vault", href: "#/"},
             {label: "#" + tag},
@@ -4141,7 +4183,7 @@
     <header class="hero rise" style="padding-top:56px">
       <span class="eyebrow"><span class="pulse"></span>Tag</span>
       <h1 class="vault-name">#${MD.esc(tag)}</h1>
-      <p class="vault-sub">${list.length} note${list.length === 1 ? "" : "s"} carry this tag.</p>
+      <p class="vault-sub">${list.length} note${list.length === 1 ? "" : "s"} ${list.length === 1 ? "carries" : "carry"} this tag.</p>
     </header>
     <div class="cards rise d1">${list.map(cardHTML).join("") || '<div class="empty">No notes with this tag.</div>'}</div>
   </div></div>`;
@@ -4867,6 +4909,16 @@
             });
             if (!boundWindow) {
               boundWindow = true;
+              const endDrag = () => {
+                if (drag) {
+                  drag = null;
+                  kick();
+                }
+              };
+              addEventListener("blur", endDrag);
+              document.addEventListener("visibilitychange", () => {
+                if (document.hidden) endDrag();
+              });
               addEventListener("mouseup", () => {
                 if (drag) {
                   drag = null;
