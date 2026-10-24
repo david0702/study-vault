@@ -222,10 +222,15 @@ def write_text(path, text, label):
 
 
 def rfc822(value):
-    try:
-        dt = datetime.strptime(str(value)[:10], "%Y-%m-%d").replace(tzinfo=TZ)
-    except Exception:
-        dt = datetime.now(TZ)
+    if isinstance(value, datetime):
+        dt = value
+    else:
+        try:
+            dt = datetime.strptime(str(value)[:10], "%Y-%m-%d")
+        except Exception:
+            dt = datetime.now(TZ)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=TZ)
     return dt.strftime("%a, %d %b %Y %H:%M:%S %z")
 
 
@@ -320,7 +325,7 @@ def main():
     <link>{SITE}/</link>
     <description>{hesc(vault['tagline'] or '个人技术笔记')}</description>
     <language>zh-CN</language>
-    <lastBuildDate>{rfc822(datetime.now(TZ).isoformat())}</lastBuildDate>
+    <lastBuildDate>{rfc822(datetime.now(TZ))}</lastBuildDate>
     <atom:link href="{SITE}/feed.xml" rel="self" type="application/rss+xml"/>
 {chr(10).join(items)}
   </channel>
