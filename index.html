@@ -2378,6 +2378,42 @@
         color: var(--muted);
       }
 
+      /* ---------- 订阅页 ---------- */
+      .feed-loading {
+        padding: 40px 0;
+        color: var(--faint);
+        font-size: 13px;
+      }
+      .feed-src {
+        margin-bottom: 28px;
+      }
+      .feed-src .recent-row {
+        display: block;
+        padding: 12px 2px;
+      }
+      .feed-src .recent-row b {
+        display: block;
+        font-size: 15px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+      .feed-src .recent-row .rr-meta {
+        display: block;
+        margin: 3px 0 2px;
+        font-size: 12.5px;
+        line-height: 1.6;
+        color: var(--muted);
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+      .feed-src .recent-row .rr-date {
+        display: block;
+        margin-left: 0;
+        text-align: right;
+        font-size: 12px;
+        color: var(--faint);
+      }
+
       /* ---------- 最近更新页 ---------- */
       .recent-rows {
         border-top: 1px solid var(--line-soft);
@@ -2542,6 +2578,26 @@
           >
             <circle cx="12" cy="12" r="8" />
             <path d="M12 8v4l3 1.8" />
+          </svg>
+        </button>
+        <button
+          class="rib"
+          id="btnFeeds"
+          title="订阅（外部 RSS）"
+          aria-label="订阅"
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          >
+            <path d="M4 11a9 9 0 0 1 9 9" />
+            <path d="M4 4a16 16 0 0 1 16 16" />
+            <circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none" />
           </svg>
         </button>
         <button
@@ -3822,6 +3878,54 @@
 
         /* ---------- index view ---------- */
         let activeTag = null;
+        async function renderFeeds() {
+          crumbs([
+            {label: DATA.name || "个人技术笔记", href: "#/"},
+            {label: "订阅"},
+          ]);
+          document.title = `订阅 · ${DATA.name || "个人技术笔记"}`;
+          view.innerHTML = `<div class="pad"><div class="wrap">
+    <header class="hero rise">
+      <span class="eyebrow"><span class="pulse"></span>外部订阅 · 只显示标题与摘要，点开看原文</span>
+      <h1 class="vault-name">订阅</h1>
+      <p class="vault-sub">HelloGitHub 月刊（官方 RSS）与 阮一峰 · 科技爱好者周刊（GitHub 仓库），每 6 小时自动抓取。</p>
+    </header>
+    <div id="feedBody" class="rise d1"><p class="feed-loading">载入中…</p></div>
+  </div></div>`;
+          const box = $("#feedBody");
+          try {
+            const d = await loadJSON("feeds.json");
+            box.innerHTML = (d.sources || [])
+              .map(
+                (s) => `<section class="feed-src">
+        <div class="sec-head"><span class="sec-title">${MD.esc(s.name)}</span><span class="sec-rule"></span>
+          <span class="sec-note">${s.items.length} 期${s.feed ? ` · <a href="${s.feed}" target="_blank" rel="noopener">RSS</a>` : ""}</span></div>
+        <div class="recent-rows">${s.items
+          .map(
+            (it) => `<a class="recent-row" href="${MD.esc(it.link)}" target="_blank" rel="noopener">
+          <b>${it.issue ? MD.esc(it.issue) + " · " : ""}${MD.esc(it.title)}</b>
+          <span class="rr-meta">${MD.esc(it.excerpt || "")}</span>
+          <span class="rr-date">${MD.esc(it.date || "")}</span></a>`,
+          )
+          .join("")}</div></section>`,
+              )
+              .join("");
+            rightPanel(
+              `<div class="rblock"><h4>订阅源</h4><ul class="meta-list">${(d.sources || [])
+                .map(
+                  (s) =>
+                    `<li><span class="k" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href="${s.home}" target="_blank" rel="noopener">${MD.esc(s.name)}</a></span><span class="v">${s.feed ? "RSS" : "网页"}</span></li>`,
+                )
+                .join("")}</ul>
+        <p style="font-size:12px;line-height:1.7;color:var(--muted);margin:10px 0 0">只聚合标题与摘要，全文请点原文。更新于 ${MD.esc(d.generated || "—")}。</p></div>`,
+              "Feeds",
+            );
+            markActive();
+          } catch (e) {
+            box.innerHTML = `<p class="feed-loading">订阅数据暂时取不到（feeds.json 未生成或抓取失败）。</p>`;
+          }
+        }
+
         function renderRecent() {
           const list = [...notes].sort(byRecent);
           crumbs([
@@ -5038,6 +5142,7 @@
           else if ((m = h.match(/^#\/tag\/([^?]+)/)))
             renderTag(decodeURIComponent(m[1]).toLowerCase());
           else if (h.startsWith("#/recent")) renderRecent();
+          else if (h.startsWith("#/feeds")) renderFeeds();
           else {
             document.title = DATA.name || "个人技术笔记";
             renderIndex();

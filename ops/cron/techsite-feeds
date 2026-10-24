@@ -1,0 +1,2 @@
+# 每 6 小时抓取外部订阅源（HelloGitHub RSS + 阮一峰周刊仓库）
+17 */6 * * * www-data /usr/bin/python3 /usr/local/bin/fetch-subscriptions.py >> /var/log/techsite-feeds.log 2>&1
