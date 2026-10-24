@@ -13,6 +13,7 @@
     />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href="https://eregion.cn/" />
+    <link rel="alternate" type="application/rss+xml" title="个人技术笔记" href="/feed.xml" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="个人技术笔记" />
     <meta property="og:title" content="个人技术笔记" />
@@ -2195,6 +2196,18 @@
         }
       }
 
+      .pal-snip {
+        display: block;
+        margin-top: 3px;
+        font-size: 11.5px;
+        line-height: 1.5;
+        color: var(--faint);
+      }
+      .side-foot .sf-sep {
+        margin: 0 6px;
+        color: var(--line);
+      }
+
       /* ---------- 笔记页打磨 ---------- */
       .moresec {
         margin: 34px 0 10px;
@@ -2594,6 +2607,8 @@
           <ul class="tree" id="tree"></ul>
         </div>
         <div class="side-foot" id="sideFt">
+          <a href="/feed.xml" title="RSS 订阅">RSS</a>
+          <span class="sf-sep">·</span>
           <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener"
             >粤ICP备2026164320号</a
           >
@@ -4333,6 +4348,41 @@
         let palResults = [],
           palSel = 0;
 
+        /* 全文索引：第一次打开 Ctrl-K 时才拉（约 200 KB，gzip ~60 KB） */
+        let SEARCH = null;
+        let searchLoading = null;
+        function ensureSearch() {
+          if (SEARCH) return Promise.resolve(SEARCH);
+          if (!searchLoading) {
+            searchLoading = loadJSON("search-index.json")
+              .then((d) => {
+                SEARCH = new Map(
+                  (d.notes || []).map((x) => [x.slug, (x.text || "").toLowerCase()]),
+                );
+                return SEARCH;
+              })
+              .catch(() => {
+                SEARCH = new Map();
+                return SEARCH;
+              });
+          }
+          return searchLoading;
+        }
+        function snipOf(n, q) {
+          if (!SEARCH || q.length < 2) return "";
+          const txt = SEARCH.get(n.slug);
+          if (!txt) return "";
+          const at = txt.indexOf(q);
+          if (at < 0) return "";
+          const from = Math.max(0, at - 24),
+            to = Math.min(txt.length, at + q.length + 34);
+          return (
+            (from > 0 ? "…" : "") +
+            txt.slice(from, to).replace(/\s+/g, " ") +
+            (to < txt.length ? "…" : "")
+          );
+        }
+
         function score(n, q) {
           const t = n.title.toLowerCase(),
             s = n.slug,
@@ -4342,6 +4392,7 @@
           if (s.includes(q)) return 66;
           if (tg.includes(q)) return 54;
           if ((n.plain || n.excerpt || "").toLowerCase().includes(q)) return 30;
+          if (q.length >= 2 && SEARCH && SEARCH.get(n.slug)?.includes(q)) return 34;
           // subsequence match on title
           let i = 0;
           for (const c of t) if (c === q[i]) i++;
@@ -4358,6 +4409,13 @@
                 .slice(0, 12)
                 .map((x) => x.n);
           palSel = 0;
+          if (q.length >= 2 && !SEARCH) {
+            palList.innerHTML = `<li class="pal-none">正在加载全文索引…（首次搜索约 200 KB）</li>`;
+            ensureSearch().then(() => {
+              if (scrim.classList.contains("on")) palPaint();
+            });
+            return;
+          }
           if (!palResults.length) {
             palList.innerHTML = `<li class="pal-none">No note matches “${MD.esc(palInput.value)}”.</li>`;
             return;
@@ -4373,7 +4431,9 @@
           ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 15h6"/></svg>'
           : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>'
       }</span>
-      <span class="pal-txt"><b>${MD.esc(n.title)}</b><span>${MD.esc(n.folder || "Notes")}${n.tags.length ? " · #" + n.tags.join(" #") : ""}</span></span>
+      <span class="pal-txt"><b>${MD.esc(n.title)}</b><span>${MD.esc(n.folder || "Notes")}${n.tags.length ? " · #" + n.tags.join(" #") : ""}</span>${
+        snipOf(n, q) ? `<span class="pal-snip">${MD.esc(snipOf(n, q))}</span>` : ""
+      }</span>
     </button></li>`,
             )
             .join("");

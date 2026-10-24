@@ -37,7 +37,8 @@ import re
 import subprocess
 import sys
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from html import escape as hesc
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -45,7 +46,13 @@ NOTES_DIR = ROOT / "content" / "notes"
 DATA_FILE = ROOT / "vault.json"                 # legacy full payload (fallback)
 INDEX_FILE = ROOT / "vault-index.json"          # manifest used by the SPA
 NOTES_OUT = ROOT / "vault-notes"                # one JSON per note
+SEARCH_FILE = ROOT / "search-index.json"        # full-text index, fetched on first Ctrl-K
+FEED_FILE = ROOT / "feed.xml"                   # RSS 2.0
+SITEMAP_FILE = ROOT / "sitemap.xml"
 CONFIG = ROOT / "content" / "vault.json"
+
+SITE = os.environ.get("SITE_URL", "https://eregion.cn")
+TZ = timezone(timedelta(hours=8))
 
 BACKUP_DIR = ROOT / ".build-backups"
 BACKUP_KEEP = 10
@@ -204,6 +211,24 @@ def write_json(path, payload, label):
     return True
 
 
+def write_text(path, text, label):
+    if path.exists() and path.read_text(encoding="utf-8") == text:
+        return False
+    if path.exists():
+        snapshot(path)
+    atomic_write(path, text)
+    print(f"  ({label} updated)")
+    return True
+
+
+def rfc822(value):
+    try:
+        dt = datetime.strptime(str(value)[:10], "%Y-%m-%d").replace(tzinfo=TZ)
+    except Exception:
+        dt = datetime.now(TZ)
+    return dt.strftime("%a, %d %b %Y %H:%M:%S %z")
+
+
 def main():
     vault = collect()
     notes = vault["notes"]
@@ -218,8 +243,10 @@ def main():
 
     # 2) 清单：只留元数据 + 字数指标 + 链接
     index_notes = []
+    plains = {}
     for n in notes:
         plain = plain_text(n["body"])
+        plains[n["slug"]] = plain
         cjk = len(CJK_RE.findall(plain))
         latin = len([w for w in re.sub(CJK_RE, " ", plain).split() if w])
         index_notes.append({
@@ -256,7 +283,71 @@ def main():
             stale.unlink()
             print(f"  (removed stale vault-notes/{stale.name})")
 
-    # 4) 按站内实际用字裁剪字体（字符集不变时脚本会自己跳过）
+    # 4) 全文搜索索引（前端第一次 Ctrl-K 才拉取）
+    write_json(SEARCH_FILE, {
+        "generated": datetime.now(TZ).strftime("%Y-%m-%dT%H:%M:%S"),
+        "notes": [
+            {
+                "slug": n["slug"],
+                "title": n["title"],
+                "folder": n["folder"],
+                "tags": n["tags"],
+                "text": plains.get(n["slug"], ""),
+            }
+            for n in notes
+        ],
+    }, "search-index.json")
+
+    # 5) RSS 2.0（订阅用；链接仍是 hash 路由，读者点开即可）
+    recent = sorted(notes, key=lambda x: (x["updated"] or x["created"] or ""), reverse=True)
+    items = []
+    for n in recent:
+        desc = n["summary"] or plains.get(n["slug"], "")[:200]
+        items.append(
+            f"""    <item>
+      <title>{hesc(n['title'])}</title>
+      <link>{SITE}/#/n/{n['slug']}</link>
+      <guid isPermaLink="false">{SITE}/n/{n['slug']}</guid>
+      <pubDate>{rfc822(n['updated'] or n['created'])}</pubDate>
+      <category>{hesc(n['folder'])}</category>
+      <description>{hesc(desc)}</description>
+    </item>"""
+        )
+    feed = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{hesc(vault['name'])}</title>
+    <link>{SITE}/</link>
+    <description>{hesc(vault['tagline'] or '个人技术笔记')}</description>
+    <language>zh-CN</language>
+    <lastBuildDate>{rfc822(datetime.now(TZ).isoformat())}</lastBuildDate>
+    <atom:link href="{SITE}/feed.xml" rel="self" type="application/rss+xml"/>
+{chr(10).join(items)}
+  </channel>
+</rss>
+"""
+    write_text(FEED_FILE, feed, "feed.xml")
+
+    # 6) sitemap：hash 路由下每篇没有独立 URL，只能先给首页
+    latest = (recent[0]["updated"] or recent[0]["created"])[:10] if recent else datetime.now(TZ).strftime("%Y-%m-%d")
+    sitemap = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{SITE}/</loc>
+    <lastmod>{latest}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>{SITE}/feed.xml</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+</urlset>
+"""
+    write_text(SITEMAP_FILE, sitemap, "sitemap.xml")
+
+    # 7) 按站内实际用字裁剪字体（字符集不变时脚本会自己跳过）
     try:
         subprocess.run([sys.executable, "/usr/local/bin/subset-techsite-fonts.py"],
                        check=False, timeout=120)

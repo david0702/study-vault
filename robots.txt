@@ -6,3 +6,5 @@ Disallow: /.build-backups/
 
 # 404 页只作为错误页返回
 Disallow: /404.html
+
+Sitemap: https://eregion.cn/sitemap.xml
