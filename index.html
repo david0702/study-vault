@@ -3979,6 +3979,19 @@
           }
           const inChapter =
             Number.isInteger(chap) && chap >= 0 && chap < chapters.length;
+          // 单章模式：右栏 NOTE INFO 显示本章的时长/字数，而不是整篇
+          if (inChapter) {
+            const cjkRe = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g;
+            const cPlain = MD.plain(chapters[chap].md.join("\n"));
+            n.__chap = {
+              label: `第 ${chap + 1}/${chapters.length} 章`,
+              chars: [...cPlain].length,
+              cjk: (cPlain.match(cjkRe) || []).length,
+              words: cPlain.replace(cjkRe, " ").split(/\s+/).filter(Boolean).length,
+            };
+          } else {
+            n.__chap = null;
+          }
           const html = inChapter
             ? MD.parse(chapters[chap].md.join("\n"), {...ctx, slug: n.slug}).html
             : full.html;
@@ -4202,7 +4215,7 @@
           rightPanel(
             `
     <div class="rblock rblock-info"><h4>Note info</h4>
-      <div class="info-line"><span id="readPct">0%</span> · ${readTimeLabel(n)} · ${(n.chars / 1000).toFixed(1)}k 字 · ${n.in.size} 反链</div>
+      <div class="info-line">${n.__chap ? `${n.__chap.label} · ` : ""}<span id="readPct">0%</span> · ${readTimeLabel(n.__chap || n)} · ${((n.__chap || n).chars / 1000).toFixed(1)}k 字 · ${n.in.size} 反链</div>
       <div class="prog"><i id="progBar"></i></div>
       <div class="info-date">${fmtDate(n.created)} → ${fmtDate(n.updated || n.created)}</div></div>
     ${ /* NOTE INFO 置顶 */
