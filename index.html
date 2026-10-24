@@ -4622,9 +4622,16 @@
             }
           }
           let boundWindow = false;
+          let downPt = null,
+            dragged = false;
           function bind() {
             // the canvas is re-created on every visit to the index, so re-bind it each time
             cvs.addEventListener("mousemove", (e) => {
+              if (downPt && !dragged) {
+                const dx = e.clientX - downPt.x,
+                  dy = e.clientY - downPt.y;
+                if (dx * dx + dy * dy > 16) dragged = true;
+              }
               if (drag) {
                 const r = cvs.getBoundingClientRect();
                 drag.x = e.clientX - r.left;
@@ -4641,6 +4648,8 @@
               }
             });
             cvs.addEventListener("mousedown", (e) => {
+              downPt = {x: e.clientX, y: e.clientY};
+              dragged = false;
               const h = at(e);
               if (h !== null) {
                 drag = nodes[h];
@@ -4652,6 +4661,10 @@
               paint();
             });
             cvs.addEventListener("click", (e) => {
+              const wasDragged = dragged;
+              dragged = false;
+              downPt = null;
+              if (wasDragged) return; // 拖动结束后的 click 不跳转
               const h = at(e);
               if (h !== null) location.hash = "#/n/" + nodes[h].slug;
             });
@@ -4662,6 +4675,11 @@
                   drag = null;
                   kick();
                 }
+                // click 在同一任务里先于 timeout 触发，这里兜底复位（例如在画布外松手）
+                setTimeout(() => {
+                  dragged = false;
+                  downPt = null;
+                }, 0);
               });
             }
           }
