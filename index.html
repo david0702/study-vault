@@ -2406,6 +2406,23 @@
         white-space: normal;
         overflow-wrap: anywhere;
       }
+      .feed-tag {
+        display: inline-block;
+        margin-right: 8px;
+        padding: 0 6px;
+        border-radius: 999px;
+        font-size: 10.5px;
+        line-height: 1.6;
+        color: var(--accent-ink);
+        background: var(--accent-soft);
+        border: 1px solid var(--accent-line);
+      }
+      .feed-tag.ext {
+        color: var(--faint);
+        background: transparent;
+        border-color: var(--line);
+      }
+
       .feed-src .recent-row .rr-date {
         display: block;
         margin-left: 0;
@@ -3886,9 +3903,9 @@
           document.title = `订阅 · ${DATA.name || "个人技术笔记"}`;
           view.innerHTML = `<div class="pad"><div class="wrap">
     <header class="hero rise">
-      <span class="eyebrow"><span class="pulse"></span>外部订阅 · 只显示标题与摘要，点开看原文</span>
+      <span class="eyebrow"><span class="pulse"></span>外部订阅 · 站内已转载的直接读全文，其余跳原文</span>
       <h1 class="vault-name">订阅</h1>
-      <p class="vault-sub">HelloGitHub 月刊（官方 RSS）与 阮一峰 · 科技爱好者周刊（GitHub 仓库），每 6 小时自动抓取。</p>
+      <p class="vault-sub">HelloGitHub 月刊（官方 RSS）与 阮一峰 · 科技爱好者周刊（GitHub 仓库），每 6 小时自动抓取；带「站内全文」标记的期数可以直接在本站阅读。</p>
     </header>
     <div id="feedBody" class="rise d1"><p class="feed-loading">载入中…</p></div>
   </div></div>`;
@@ -3899,14 +3916,20 @@
               .map(
                 (s) => `<section class="feed-src">
         <div class="sec-head"><span class="sec-title">${MD.esc(s.name)}</span><span class="sec-rule"></span>
-          <span class="sec-note">${s.items.length} 期${s.feed ? ` · <a href="${s.feed}" target="_blank" rel="noopener">RSS</a>` : ""}</span></div>
+          <span class="sec-note">${s.items.length} 期${(() => {
+            const n = s.items.filter((x) => x.note_slug).length;
+            return n ? ` · 站内已转载 ${n} 期` : "";
+          })()}${s.feed ? ` · <a href="${s.feed}" target="_blank" rel="noopener">RSS</a>` : ""}</span></div>
         <div class="recent-rows">${s.items
-          .map(
-            (it) => `<a class="recent-row" href="${MD.esc(it.link)}" target="_blank" rel="noopener">
+          .map((it) => {
+            const inSite = !!it.note_slug;
+            const href = inSite ? "#/n/" + it.note_slug : MD.esc(it.link);
+            const attrs = inSite ? "" : ' target="_blank" rel="noopener"';
+            return `<a class="recent-row" href="${href}"${attrs}>
           <b>${it.issue ? MD.esc(it.issue) + " · " : ""}${MD.esc(it.title)}</b>
           <span class="rr-meta">${MD.esc(it.excerpt || "")}</span>
-          <span class="rr-date">${MD.esc(it.date || "")}</span></a>`,
-          )
+          <span class="rr-date">${inSite ? '<span class="feed-tag">站内全文</span>' : '<span class="feed-tag ext">原文</span>'}${MD.esc(it.date || "")}</span></a>`;
+          })
           .join("")}</div></section>`,
               )
               .join("");
