@@ -42,13 +42,14 @@ from html import escape as hesc
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+PUBLIC = ROOT / "public"                        # nginx root：只放对外产物
 NOTES_DIR = ROOT / "content" / "notes"
-DATA_FILE = ROOT / "vault.json"                 # legacy full payload (fallback)
-INDEX_FILE = ROOT / "vault-index.json"          # manifest used by the SPA
-NOTES_OUT = ROOT / "vault-notes"                # one JSON per note
-SEARCH_FILE = ROOT / "search-index.json"        # full-text index, fetched on first Ctrl-K
-FEED_FILE = ROOT / "feed.xml"                   # RSS 2.0
-SITEMAP_FILE = ROOT / "sitemap.xml"
+DATA_FILE = PUBLIC / "vault.json"               # legacy full payload (fallback)
+INDEX_FILE = PUBLIC / "vault-index.json"        # manifest used by the SPA
+NOTES_OUT = PUBLIC / "vault-notes"              # one JSON per note
+SEARCH_FILE = PUBLIC / "search-index.json"      # full-text index, fetched on first Ctrl-K
+FEED_FILE = PUBLIC / "feed.xml"                 # RSS 2.0
+SITEMAP_FILE = PUBLIC / "sitemap.xml"
 CONFIG = ROOT / "content" / "vault.json"
 
 SITE = os.environ.get("SITE_URL", "https://eregion.cn")
