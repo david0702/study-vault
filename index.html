@@ -1049,6 +1049,32 @@
       }
 
       /* pdf panel */
+      .repost-line {
+        margin: 10px 0 2px;
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: var(--muted);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+      }
+      .repost-line a {
+        color: var(--accent-ink);
+        text-decoration: none;
+        border-bottom: 1px dotted var(--line);
+      }
+      .repost-badge {
+        display: inline-block;
+        padding: 1px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--accent-line);
+        background: var(--accent-soft);
+        color: var(--accent-ink);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+      }
+
       .pdf-panel {
         display: flex;
         align-items: center;
@@ -3942,12 +3968,12 @@
     <div class="rblock"><h4>Downloads</h4><ul class="meta-list">
       ${
         notes
-          .filter((n) => n.pdf)
+          .filter((n) => n.pdf || n.epub)
           .map(
             (n) =>
-              `<li><span class="k" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href="#/n/${n.slug}">${MD.esc(n.title)}</a></span><span class="v">PDF</span></li>`,
+              `<li><span class="k" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href="#/n/${n.slug}">${MD.esc(n.title)}</a></span><span class="v">${n.pdf ? "PDF" : ""}${n.pdf && n.epub ? " · " : ""}${n.epub ? "EPUB" : ""}</span></li>`,
           )
-          .join("") || '<li><span class="k">No PDFs attached yet</span></li>'
+          .join("") || '<li><span class="k">No downloads attached yet</span></li>'
       }
     </ul></div>`,
             "Vault",
@@ -4036,6 +4062,14 @@
         <div class="note-kicker"><span>${MD.esc(n.folder || "Notes")}</span><span class="sep"></span><span>${n.slug}.md</span></div>
         <h1 class="note-title">${MD.esc(n.title)}</h1>
         ${UNFINISHED[n.slug] ? `<div class="unfinished-note-badge">⚠ 本笔记尚未完成</div>` : ""}
+        ${
+          n.source || n.source_url || n.license
+            ? `<div class="repost-line"><span class="repost-badge">转载 / 导读</span>
+          ${n.source ? `来源：${n.source_url ? `<a href="${MD.esc(n.source_url)}" target="_blank" rel="noopener">${MD.esc(n.source)}</a>` : MD.esc(n.source)}` : ""}
+          ${n.license ? `<span class="sep">·</span>许可：${MD.esc(n.license)}` : ""}
+          ${n.modified ? `<span class="sep">·</span>${MD.esc(n.modified)}` : ""}</div>`
+            : ""
+        }
         <div class="note-meta">
           <span>Updated ${fmtDate(n.updated || n.created)}</span><span class="sep"></span>
           <span>${readTimeLabel(n)}</span><span class="sep"></span>
@@ -4057,6 +4091,17 @@
           Download</a>
       </div>
       <div class="pdf-frame" id="pdfFrame" hidden></div>`
+          : ""
+      }
+      ${
+        n.epub
+          ? `<div class="pdf-panel">
+        <div class="pdf-ico">EPUB</div>
+        <div class="pdf-txt"><b>${MD.esc(n.epub.split("/").pop())}</b><span>电子书版本（用阅读器打开）</span></div>
+        <a class="btn btn-primary" href="${n.epub}" download rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
+          Download</a>
+      </div>`
           : ""
       }
 

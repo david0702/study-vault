@@ -127,13 +127,20 @@ def collect():
             "created": str(meta.get("created") or ""),
             "updated": str(meta.get("updated") or meta.get("created") or ""),
             "pdf": str(meta.get("pdf") or ""),
+            "epub": str(meta.get("epub") or ""),
+            "source": str(meta.get("source") or "").strip(),
+            "source_url": str(meta.get("source_url") or "").strip(),
+            "license": str(meta.get("license") or "").strip(),
+            "modified": str(meta.get("modified") or "").strip(),
             "summary": str(meta.get("summary") or "").strip(),
             "body": body.rstrip() + "\n",
         })
 
     for n in notes:
-        if n["pdf"] and not (ROOT / n["pdf"]).exists():
-            print(f"  ! {n['slug']}: PDF not found at {n['pdf']}")
+        for key in ("pdf", "epub"):
+            path = n[key]
+            if path and not path.startswith("http") and not (PUBLIC / path).exists():
+                print(f"  ! {n['slug']}: {key.upper()} not found at {path}")
 
     # resolve [[wikilinks]] -> slugs, so the frontend doesn't need bodies at boot
     by_slug = {n["slug"]: n for n in notes}
@@ -263,6 +270,11 @@ def main():
             "created": n["created"],
             "updated": n["updated"],
             "pdf": n["pdf"],
+            "epub": n["epub"],
+            "source": n["source"],
+            "source_url": n["source_url"],
+            "license": n["license"],
+            "modified": n["modified"],
             "summary": n["summary"],
             "excerpt": plain[:200],
             "chars": len(plain),
