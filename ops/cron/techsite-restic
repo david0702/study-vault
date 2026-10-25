@@ -1,0 +1,4 @@
+# restic 增量备份（补充每日 tar）：每天 03:45 备份，周日 05:20 prune，每月 1 日 05:40 check
+45 3 * * * root /usr/local/bin/backup-restic.sh >/dev/null 2>&1
+20 5 * * 0 root /usr/local/bin/restic-maintenance.sh prune >/dev/null 2>&1
+40 5 1 * * root /usr/local/bin/restic-maintenance.sh check >/dev/null 2>&1

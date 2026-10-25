@@ -1,1 +1,2 @@
-*/5 * * * * www-data /usr/bin/python3 /srv/study-vault/build.py >> /var/log/techsite-build.log 2>&1
+# 每 5 分钟构建；成功后向 Uptime Kuma 上报（Push 监控 12），失败/漏跑会告警
+*/5 * * * * root /usr/local/bin/build-techsite.sh

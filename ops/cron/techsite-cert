@@ -1,0 +1,2 @@
+# 每天 04:50 检查证书剩余天数，上报 Uptime Kuma（Push 监控 15）
+50 4 * * * root /usr/local/bin/check-cert-techsite.sh >> /var/log/techsite-cert.log 2>&1
