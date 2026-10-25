@@ -258,6 +258,7 @@ def main():
     index_notes = []
     plains = {}
     for n in notes:
+        meta_repost = False  # frontmatter 里可显式写 repost: true；目前按 folder 判定
         plain = plain_text(n["body"])
         plains[n["slug"]] = plain
         cjk = len(CJK_RE.findall(plain))
@@ -271,6 +272,7 @@ def main():
             "updated": n["updated"],
             "pdf": n["pdf"],
             "epub": n["epub"],
+            "repost": bool(meta_repost) or (n["folder"].strip() == "60 转载"),
             "source": n["source"],
             "source_url": n["source_url"],
             "license": n["license"],

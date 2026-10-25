@@ -3346,6 +3346,8 @@
           ...n,
           tags: n.tags || [],
         }));
+        // 转载内容只在「订阅」页出现，不混进笔记浏览列表
+        const browseNotes = notes.filter((n) => !n.repost);
         const bySlug = new Map(notes.map((n) => [n.slug, n]));
         const byTitle = new Map(notes.map((n) => [n.title.toLowerCase(), n]));
 
@@ -3391,7 +3393,7 @@
         );
 
         const tagCounts = new Map();
-        notes.forEach((n) =>
+        browseNotes.forEach((n) =>
           n.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1)),
         );
         const allTags = [...tagCounts.entries()].sort(
@@ -3399,7 +3401,7 @@
         );
 
         const folders = [
-          ...new Set(notes.map((n) => n.folder || "Notes")),
+          ...new Set(browseNotes.map((n) => n.folder || "Notes")),
         ].sort();
         const fmtDate = (d) => {
           if (!d) return "—";
@@ -3753,7 +3755,7 @@
           }
 
           function renderFolder(f) {
-            const kids = notes
+            const kids = browseNotes
               .filter((n) => (n.folder || "Notes") === f)
               .filter(
                 (n) =>
@@ -3950,7 +3952,7 @@
         }
 
         function renderRecent() {
-          const list = [...notes].sort(byRecent);
+          const list = [...browseNotes].sort(byRecent);
           crumbs([
             {label: DATA.name || "Vault", href: "#/"},
             {label: "最近更新"},
@@ -3985,20 +3987,20 @@
         function renderIndex() {
           resetTreeScroll();
           crumbs([{label: DATA.name || "个人技术笔记"}]);
-          const pdfCount = notes.filter((n) => n.pdf).length;
-          const linkCount = notes.reduce((s, n) => s + n.out.size, 0);
-          const chars = notes.reduce((s, n) => s + n.chars, 0);
-          const recent = [...notes].sort(byRecent);
-          const orphans = notes.filter((n) => !n.in.size && !n.out.size);
+          const pdfCount = browseNotes.filter((n) => n.pdf).length;
+          const linkCount = browseNotes.reduce((s, n) => s + n.out.size, 0);
+          const chars = browseNotes.reduce((s, n) => s + n.chars, 0);
+          const recent = [...browseNotes].sort(byRecent);
+          const orphans = browseNotes.filter((n) => !n.in.size && !n.out.size);
 
           view.innerHTML = `<div class="pad"><div class="wrap">
     <header class="hero rise">
-      <span class="eyebrow"><span class="pulse"></span>${notes.length} notes · last edited ${fmtDate(recent[0] && (recent[0].updated || recent[0].created))}</span>
+      <span class="eyebrow"><span class="pulse"></span>${browseNotes.length} notes · last edited ${fmtDate(recent[0] && (recent[0].updated || recent[0].created))}</span>
       <h1 class="vault-name">${MD.esc(DATA.name || "个人技术笔记")}<span class="vault-suffix">：笔记集</span></h1>
       <p class="vault-sub">${DATA.tagline || "Everything I'm working through, written in my own words. Read a note in the browser, or take the PDF with you."}</p>
       <a href="/" class="home-btn">← 返回个人主页</a>
       <div class="stats">
-        <div class="stat"><div class="n">${notes.length}</div><div class="l">Notes</div></div>
+        <div class="stat"><div class="n">${browseNotes.length}</div><div class="l">Notes</div></div>
         <div class="stat"><div class="n">${folders.length}</div><div class="l">Subjects</div></div>
         <div class="stat" style="display:none"><div class="n">${linkCount}</div><div class="l">Links</div></div>
         <div class="stat"><div class="n">${pdfCount}</div><div class="l">PDFs</div></div>
@@ -4010,7 +4012,7 @@
       <div class="sec-head"><span class="sec-title">Filter by tag</span><span class="sec-rule"></span>
         <span class="sec-note">${allTags.length} tags</span></div>
       <div class="chips" id="tagChips">
-        <button class="chip" data-tag="" aria-pressed="${!activeTag}">All notes <span class="c">${notes.length}</span></button>
+        <button class="chip" data-tag="" aria-pressed="${!activeTag}">All notes <span class="c">${browseNotes.length}</span></button>
         ${allTags.map(([t, c]) => `<button class="chip" data-tag="${t}" aria-pressed="${activeTag === t}">#${MD.esc(t)} <span class="c">${c}</span></button>`).join("")}
       </div>
     </section>
@@ -4050,8 +4052,8 @@
           const paint = () => {
             const list = (
               activeTag
-                ? notes.filter((n) => n.tags.includes(activeTag))
-                : [...notes]
+                ? browseNotes.filter((n) => n.tags.includes(activeTag))
+                : [...browseNotes]
             ).sort(byRecent);
             grid.innerHTML = list.length
               ? list.map(cardHTML).join("")
@@ -4358,7 +4360,7 @@
 
         function renderTag(tag) {
           resetTreeScroll();
-          const list = notes.filter((n) => n.tags.includes(tag)).sort(byRecent);
+          const list = browseNotes.filter((n) => n.tags.includes(tag)).sort(byRecent);
           document.title = `#${tag} · ${DATA.name || "个人技术笔记"}`;
           crumbs([
             {label: DATA.name || "Vault", href: "#/"},
@@ -4884,22 +4886,22 @@
             cvs = $("#graph");
             if (!cvs) return;
             ctx2 = cvs.getContext("2d");
-            nodes = notes.map((n, i) => ({
+            nodes = browseNotes.map((n, i) => ({
               slug: n.slug,
               title: n.title,
               deg: n.in.size + n.out.size,
               x:
-                Math.cos((i / notes.length) * 6.283) * 120 +
+                Math.cos((i / browseNotes.length) * 6.283) * 120 +
                 (Math.random() - 0.5) * 20,
               y:
-                Math.sin((i / notes.length) * 6.283) * 90 +
+                Math.sin((i / browseNotes.length) * 6.283) * 90 +
                 (Math.random() - 0.5) * 20,
               vx: 0,
               vy: 0,
             }));
             const idx = new Map(nodes.map((n, i) => [n.slug, i]));
             edges = [];
-            notes.forEach((n) =>
+            browseNotes.forEach((n) =>
               n.out.forEach((t) => edges.push([idx.get(n.slug), idx.get(t)])),
             );
             ready = true;
