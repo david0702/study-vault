@@ -2554,6 +2554,71 @@
           padding-bottom: 18px;
         }
       }
+
+      /* ---------- Hero v2（2026-10-26，B-2） ---------- */
+      .hero {
+        padding: 26px 0 0;
+        border-bottom: 0;
+        margin-bottom: 10px;
+      }
+      .hero .eyebrow {
+        background: none;
+        padding: 0;
+        border-radius: 0;
+        color: var(--faint);
+        font-weight: 500;
+        font-size: 10.5px;
+        letter-spacing: 0.18em;
+        margin-bottom: 16px;
+      }
+      .hero h1.vault-name {
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        margin-bottom: 0;
+      }
+      .hero .vault-sub {
+        font-size: 15px;
+        line-height: 1.8;
+        color: var(--ink-2);
+        max-width: 58ch;
+        margin: 0;
+      }
+      .hero .home-btn {
+        font-size: 12.5px;
+        color: var(--accent-ink);
+        margin: 16px 0 0;
+      }
+      .hero .stats { gap: 34px; }
+      .hero .stat .n { font-size: 24px; font-weight: 500; }
+      .hero .stat .l { font-size: 9.5px; letter-spacing: 0.18em; }
+      .hero-home h1.vault-name {
+        font-size: clamp(2.9rem, 6.2vw, 5rem);
+      }
+      .hero-subrow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 26px 48px;
+        margin-top: 22px;
+      }
+      .hero-subrow > div:first-child { flex: 1 1 520px; min-width: 0; max-width: 640px; }
+      .hero-subrow .vault-sub { max-width: none; }
+      .hero-subrow .stats { flex: 0 0 auto; padding-bottom: 4px; }
+      .hero-rule {
+        height: 2px;
+        margin: 30px 0 0;
+        background: var(--accent);
+        -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 44%, transparent 100%);
+        mask-image: linear-gradient(90deg, #000 0%, #000 44%, transparent 100%);
+      }
+      @media (max-width: 860px) {
+        .hero-subrow { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .hero-home h1.vault-name { font-size: 2.3rem; }
+        .hero .stats { gap: 24px; }
+        .hero-rule { margin-top: 22px; }
+      }
+
     </style>
   </head>
   <body data-left="on" data-right="on" data-width="normal">
@@ -3958,6 +4023,7 @@
       <span class="eyebrow"><span class="pulse"></span>外部订阅 · 按时间汇总 · 站内已转载的直接读全文</span>
       <h1 class="vault-name">订阅</h1>
       <p class="vault-sub">HelloGitHub 月刊（官方 RSS）与 阮一峰 · 科技爱好者周刊（GitHub 仓库），每 6 小时自动抓取；可切换来源、切换排序。</p>
+      <div class="hero-rule"></div>
     </header>
     <div id="feedBody" class="rise d1"><p class="feed-loading">载入中…</p></div>
   </div></div>`;
@@ -4053,6 +4119,7 @@
       <span class="eyebrow"><span class="pulse"></span>按最后修改时间排序</span>
       <h1 class="vault-name">最近更新</h1>
       <p class="vault-sub">共 ${list.length} 篇笔记，最近一次更新 ${fmtDate(list[0] && (list[0].updated || list[0].created))}。</p>
+      <div class="hero-rule"></div>
     </header>
     <section class="sec rise d1"><div class="recent-rows">
       ${list
@@ -4084,18 +4151,22 @@
           const orphans = browseNotes.filter((n) => !n.in.size && !n.out.size);
 
           view.innerHTML = `<div class="pad"><div class="wrap">
-    <header class="hero rise">
-      <span class="eyebrow"><span class="pulse"></span>${browseNotes.length} notes · last edited ${fmtDate(recent[0] && (recent[0].updated || recent[0].created))}</span>
+    <header class="hero hero-home rise">
+      <span class="eyebrow"><span class="pulse"></span>${browseNotes.length} NOTES · ${folders.length} SUBJECTS · ${(chars / 1000).toFixed(0)}K 字符</span>
       <h1 class="vault-name">${MD.esc(DATA.name || "个人技术笔记")}<span class="vault-suffix">：笔记集</span></h1>
-      <p class="vault-sub">${DATA.tagline || "Everything I'm working through, written in my own words. Read a note in the browser, or take the PDF with you."}</p>
-      <a href="/" class="home-btn">← 返回个人主页</a>
-      <div class="stats">
-        <div class="stat"><div class="n">${browseNotes.length}</div><div class="l">Notes</div></div>
-        <div class="stat"><div class="n">${folders.length}</div><div class="l">Subjects</div></div>
-        <div class="stat" style="display:none"><div class="n">${linkCount}</div><div class="l">Links</div></div>
-        <div class="stat"><div class="n">${pdfCount}</div><div class="l">PDFs</div></div>
-        <div class="stat"><div class="n">${(chars / 1000).toFixed(1)}k</div><div class="l">字符</div></div>
+      <div class="hero-subrow">
+        <div>
+          <p class="vault-sub">${DATA.tagline || "Everything I'm working through, written in my own words."}</p>
+          <a href="/" class="home-btn">← 返回个人主页</a>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="n">${browseNotes.length}</div><div class="l">Notes</div></div>
+          <div class="stat"><div class="n">${folders.length}</div><div class="l">Subjects</div></div>
+          <div class="stat"><div class="n">${pdfCount}</div><div class="l">PDFs</div></div>
+          <div class="stat"><div class="n">${(chars / 1000).toFixed(0)}k</div><div class="l">字符</div></div>
+        </div>
       </div>
+      <div class="hero-rule"></div>
     </header>
 
     <section class="sec rise d1">
