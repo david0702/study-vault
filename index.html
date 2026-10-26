@@ -4838,6 +4838,38 @@
         }
         const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+        function renderNotFound(path) {
+          document.title = `页面不存在 · ${DATA.name || "个人技术笔记"}`;
+          crumbs([
+            {label: DATA.name || "个人技术笔记", href: "#/"},
+            {label: "页面不存在"},
+          ]);
+          view.innerHTML = `<div class="pad"><div class="wrap">
+    <header class="hero rise">
+      <span class="eyebrow">404 · NOT FOUND</span>
+      <h1 class="vault-name">页面不存在</h1>
+      <p class="vault-sub">没有 <code>${MD.esc(path)}</code> 对应的页面，可能是链接写错或内容已移除。</p>
+      <a href="#/" class="home-btn">← 回到首页</a>
+      <div class="hero-rule"></div>
+    </header>
+    <section class="sec rise d1">
+      <div class="sec-head"><span class="sec-title">可以试试</span><span class="sec-rule"></span></div>
+      <div class="chips">
+        <a class="chip" href="#/feeds">订阅</a>
+        <a class="chip" href="#/recent">最近更新</a>
+        <a class="chip" href="#/">全部笔记</a>
+      </div>
+    </section>
+  </div></div>`;
+          rightPanel(
+            `<div class="rblock"><h4>404</h4>
+        <p style="font-size:12.5px;line-height:1.7;color:var(--muted)">路径：<code>${MD.esc(path)}</code></p>
+      </div>`,
+            "404",
+          );
+          markActive();
+        }
+
         function renderMissing(slug) {
           crumbs([
             {label: DATA.name || "Vault", href: "#/"},
@@ -5724,9 +5756,11 @@
             renderTag(decodeURIComponent(m[1]).toLowerCase());
           else if (h.startsWith("#/recent")) renderRecent();
           else if (h.startsWith("#/feeds")) renderFeeds();
-          else {
+          else if (h === "#/" || h === "") {
             document.title = DATA.name || "个人技术笔记";
             renderIndex();
+          } else {
+            renderNotFound(h);
           }
           peek.classList.remove("on");
           if (innerWidth < 860) {
