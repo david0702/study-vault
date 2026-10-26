@@ -1,0 +1,2 @@
+# 每周五 06:30：自动检查并导入 阮一峰周刊 / HelloGitHub 新一期，然后重建
+30 6 * * 5 root /usr/local/bin/update-subscriptions.py >> /var/log/techsite-subscriptions.log 2>&1

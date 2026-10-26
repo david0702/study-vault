@@ -4572,7 +4572,31 @@
         async function renderNote(slug, hash, chap) {
           const n = bySlug.get(slug);
           if (!n) return renderMissing(slug);
-          if (n.body == null) {
+          const wantsChapter = Number.isInteger(chap) && chap >= 0;
+          let chapterBody = null;
+          let chapters = null;
+          let full = null;
+
+          if (n.split && wantsChapter) {
+            // 分章笔记：只加载目录 + 当前章（避免整本 600KB+）
+            view.innerHTML = `<div class="pad"><div class="wrap"><div class="note-loading">载入中…</div></div></div>`;
+            try {
+              const toc = await loadJSON(
+                `vault-notes/${encodeURIComponent(n.slug)}.toc.json`,
+              );
+              const titles = toc.titles || [];
+              chap = Math.max(0, Math.min(chap, Math.max(0, titles.length - 1)));
+              const ch = await loadJSON(
+                `vault-notes/${encodeURIComponent(n.slug)}.c${chap}.json`,
+              );
+              chapterBody = ch.md || "";
+              chapters = titles.map((t) => ({ title: t, md: [""] }));
+            } catch (e) {
+              chapterBody = null;
+            }
+          }
+
+          if (chapterBody == null && n.body == null) {
             view.innerHTML = `<div class="pad"><div class="wrap"><div class="note-loading">载入中…</div></div></div>`;
             try {
               const d = await loadJSON(
@@ -4583,17 +4607,24 @@
               return renderMissing(slug);
             }
           }
-          const full = MD.parse(n.body, {...ctx, slug: n.slug});
-          const chapters = splitChapters(n.body);
-          if (Number.isInteger(chap) && chapters.length > 0) {
-            chap = Math.max(0, Math.min(chap, chapters.length - 1));
+          if (chapterBody != null) {
+            full = null;
+          } else {
+            full = MD.parse(n.body, {...ctx, slug: n.slug});
+            chapters = splitChapters(n.body);
+            if (Number.isInteger(chap) && chapters.length > 0) {
+              chap = Math.max(0, Math.min(chap, chapters.length - 1));
+            }
           }
           const inChapter =
-            Number.isInteger(chap) && chap >= 0 && chap < chapters.length;
+            chapterBody != null ||
+            (Number.isInteger(chap) && chap >= 0 && chap < chapters.length);
           // 单章模式：右栏 NOTE INFO 显示本章的时长/字数，而不是整篇
           if (inChapter) {
             const cjkRe = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g;
-            const cPlain = MD.plain(chapters[chap].md.join("\n"));
+            const cPlain = MD.plain(
+              chapterBody != null ? chapterBody : chapters[chap].md.join("\n"),
+            );
             n.__chap = {
               label: `${chap + 1}/${chapters.length}`,
               chars: [...cPlain].length,
@@ -4604,7 +4635,10 @@
             n.__chap = null;
           }
           const chapterParsed = inChapter
-            ? MD.parse(chapters[chap].md.join("\n"), {...ctx, slug: n.slug})
+            ? MD.parse(
+                chapterBody != null ? chapterBody : chapters[chap].md.join("\n"),
+                {...ctx, slug: n.slug},
+              )
             : null;
           const headings = chapterParsed ? chapterParsed.headings : full.headings;
           const html = chapterParsed ? chapterParsed.html : full.html;

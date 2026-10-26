@@ -90,6 +90,31 @@ def normalise_tags(value):
     return []
 
 
+def split_chapters(body):
+    """按 ## 切章（跳过 ``` 围栏），与前端 splitChapters 保持一致。"""
+    lines = body.split("\n")
+    secs = []
+    cur = {"title": "", "md": []}
+    fence = False
+    for line in lines:
+        if line.strip().startswith("```"):
+            fence = not fence
+        m = None if fence else re.match(r"^##\s+(.+?)\s*#*\s*$", line)
+        if m:
+            if cur["title"] or "\n".join(cur["md"]).strip():
+                secs.append(cur)
+            cur = {"title": m.group(1).strip(), "md": [line]}
+        else:
+            cur["md"].append(line)
+    if cur["title"] or "\n".join(cur["md"]).strip():
+        secs.append(cur)
+    # 合并开头的无标题前言（转载声明等）到第一章，避免出现空标题章节
+    if len(secs) > 1 and not secs[0]["title"].strip():
+        pre = secs.pop(0)
+        secs[0]["md"] = pre["md"] + secs[0]["md"]
+    return secs
+
+
 def plain_text(body):
     """Markdown -> plain text, 与前端 MD.plain() 保持一致（避免字数对不上）。"""
     s = re.sub(r"```[\s\S]*?```", " ", body)
@@ -258,7 +283,6 @@ def main():
     index_notes = []
     plains = {}
     for n in notes:
-        meta_repost = False  # frontmatter 里可显式写 repost: true；目前按 folder 判定
         plain = plain_text(n["body"])
         plains[n["slug"]] = plain
         cjk = len(CJK_RE.findall(plain))
@@ -272,11 +296,12 @@ def main():
             "updated": n["updated"],
             "pdf": n["pdf"],
             "epub": n["epub"],
-            "repost": bool(meta_repost) or (n["folder"].strip() == "60 转载"),
             "source": n["source"],
             "source_url": n["source_url"],
             "license": n["license"],
             "modified": n["modified"],
+            "split": len(n["body"]) > 150000,
+            "chapters": len(split_chapters(n["body"])),
             "summary": n["summary"],
             "excerpt": plain[:200],
             "chars": len(plain),
@@ -297,6 +322,19 @@ def main():
         dest = NOTES_OUT / f"{n['slug']}.json"
         live.add(dest.name)
         write_json(dest, {"slug": n["slug"], "body": n["body"]}, f"vault-notes/{dest.name}")
+
+        # 重型笔记：额外输出目录 + 分章 JSON（前端只加载当前章）
+        if len(n["body"]) > 150000:
+            chs = split_chapters(n["body"])
+            toc = NOTES_OUT / f"{n['slug']}.toc.json"
+            live.add(toc.name)
+            write_json(toc, {"slug": n["slug"], "title": n["title"],
+                             "titles": [c["title"] for c in chs]}, f"vault-notes/{toc.name}")
+            for i, c in enumerate(chs):
+                cf = NOTES_OUT / f"{n['slug']}.c{i}.json"
+                live.add(cf.name)
+                write_json(cf, {"title": c["title"], "md": "\n".join(c["md"])},
+                           f"vault-notes/{cf.name}")
     for stale in NOTES_OUT.glob("*.json"):
         if stale.name not in live:
             stale.unlink()
