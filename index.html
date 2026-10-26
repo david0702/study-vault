@@ -2855,6 +2855,23 @@
         }
       }
 
+
+      /* 代码块横向滚动可见性（2026-10-26） */
+      .md pre {
+        scrollbar-width: thin;
+        scrollbar-color: var(--line-2) transparent;
+      }
+      .md pre::-webkit-scrollbar {
+        height: 7px;
+      }
+      .md pre::-webkit-scrollbar-thumb {
+        background: var(--line-2);
+        border-radius: 4px;
+      }
+      .md pre::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
     </style>
   </head>
   <body data-left="on" data-right="on" data-width="normal">
@@ -4578,7 +4595,7 @@
             const cjkRe = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g;
             const cPlain = MD.plain(chapters[chap].md.join("\n"));
             n.__chap = {
-              label: `第 ${chap + 1}/${chapters.length} 章`,
+              label: `${chap + 1}/${chapters.length}`,
               chars: [...cPlain].length,
               cjk: (cPlain.match(cjkRe) || []).length,
               words: cPlain.replace(cjkRe, " ").split(/\s+/).filter(Boolean).length,
@@ -4676,7 +4693,7 @@
           : ""
       }
 
-      <div class="md" id="mdBody">${inChapter ? `<p class="chap-kicker">${MD.esc(n.folder || "Notes")} / ${chapters.length} 章 · 第 ${chap + 1} 章 <a href="#/n/${n.slug}">查看全文</a></p>` : ""}${html}</div>
+      <div class="md" id="mdBody">${inChapter ? `<p class="chap-kicker">${MD.esc(n.folder || "Notes")} / ${chapters.length} 章 · ${chap + 1}/${chapters.length} <a href="#/n/${n.slug}">查看全文</a></p>` : ""}${html}</div>
       ${chapNav}
 
       <section class="after">
