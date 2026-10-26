@@ -32,6 +32,7 @@ unchanged files are left untouched; the previous version is snapshotted to
 """
 
 import json
+from html import escape as html_escape
 import os
 import re
 import subprocess
@@ -108,11 +109,104 @@ def split_chapters(body):
             cur["md"].append(line)
     if cur["title"] or "\n".join(cur["md"]).strip():
         secs.append(cur)
-    # 合并开头的无标题前言（转载声明等）到第一章，避免出现空标题章节
-    if len(secs) > 1 and not secs[0]["title"].strip():
-        pre = secs.pop(0)
-        secs[0]["md"] = pre["md"] + secs[0]["md"]
     return secs
+
+
+def _inline_html(s):
+    s = html_escape(s, quote=False)
+    s = re.sub(r"`([^`]+)`", lambda m: f"<code>{m.group(1)}</code>", s)
+    s = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)\)",
+               lambda m: f'<img src="{abs_url(m.group(2))}" alt="{m.group(1)}" style="max-width:100%">', s)
+    s = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)",
+               lambda m: f'<a href="{abs_url(m.group(2))}">{m.group(1)}</a>', s)
+    s = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", s)
+    s = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"<em>\1</em>", s)
+    return s
+
+
+def md_to_html(body):
+    """够用的 Markdown→HTML：标题/段落/引用/列表/代码/图片/链接。"""
+    out = []
+    lines = body.split("\n")
+    i = 0
+    in_code = False
+    code = []
+    lang = ""
+    para = []
+
+    def flush_para():
+        if para:
+            out.append("<p>" + _inline_html(" ".join(para)) + "</p>")
+            para.clear()
+
+    while i < len(lines):
+        line = lines[i]
+        if line.strip().startswith("```"):
+            if in_code:
+                out.append(
+                    '<pre><code class="language-%s">%s</code></pre>'
+                    % (lang, html_escape("\n".join(code)))
+                )
+                code = []
+                in_code = False
+            else:
+                flush_para()
+                lang = line.strip()[3:].strip()
+                in_code = True
+            i += 1
+            continue
+        if in_code:
+            code.append(line)
+            i += 1
+            continue
+
+        m = re.match(r"^(#{1,6})\s+(.*)$", line)
+        if m:
+            flush_para()
+            lvl = len(m.group(1))
+            out.append(f"<h{lvl}>{_inline_html(m.group(2))}</h{lvl}>")
+            i += 1
+            continue
+        if line.startswith(">"):
+            flush_para()
+            quote = []
+            while i < len(lines) and lines[i].startswith(">"):
+                quote.append(lines[i].lstrip("> ").rstrip())
+                i += 1
+            out.append("<blockquote><p>" + _inline_html(" ".join(quote)) + "</p></blockquote>")
+            continue
+        if re.match(r"^\s*[-*]\s+", line):
+            flush_para()
+            out.append("<ul>")
+            while i < len(lines) and re.match(r"^\s*[-*]\s+", lines[i]):
+                out.append("<li>" + _inline_html(re.sub(r"^\s*[-*]\s+", "", lines[i])) + "</li>")
+                i += 1
+            out.append("</ul>")
+            continue
+        if re.match(r"^\s*\d+\.\s+", line):
+            flush_para()
+            out.append("<ol>")
+            while i < len(lines) and re.match(r"^\s*\d+\.\s+", lines[i]):
+                out.append("<li>" + _inline_html(re.sub(r"^\s*\d+\.\s+", "", lines[i])) + "</li>")
+                i += 1
+            out.append("</ol>")
+            continue
+        if not line.strip():
+            flush_para()
+            i += 1
+            continue
+        para.append(line.strip())
+        i += 1
+    flush_para()
+    return "\n".join(out)
+
+
+def abs_url(u):
+    if u.startswith("http") or u.startswith("mailto:"):
+        return u
+    if u.startswith("#"):
+        return SITE + "/" + u
+    return SITE + (u if u.startswith("/") else "/" + u)
 
 
 def plain_text(body):
@@ -359,6 +453,19 @@ def main():
     items = []
     for n in recent:
         desc = n["summary"] or plains.get(n["slug"], "")[:200]
+        body = n["body"]
+        if len(body) <= 80000:
+            html_body = md_to_html(body)
+        else:
+            titles = [c["title"] for c in split_chapters(body) if c["title"].strip()]
+            html_body = (
+                '<p><em>篇幅较长，全文请点标题阅读；章节目录：</em></p><ul>'
+                + "".join(f"<li>{html_escape(t)}</li>" for t in titles)
+                + "</ul>"
+            )
+        content_tag = (
+            "      <content:encoded><![CDATA[" + html_body.replace("]]>", "]]&gt;") + "]]></content:encoded>"
+        )
         items.append(
             f"""    <item>
       <title>{hesc(n['title'])}</title>
@@ -367,10 +474,11 @@ def main():
       <pubDate>{rfc822(n['updated'] or n['created'])}</pubDate>
       <category>{hesc(n['folder'])}</category>
       <description>{hesc(desc)}</description>
+{content_tag}
     </item>"""
         )
     feed = f"""<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>{hesc(vault['name'])}</title>
     <link>{SITE}/</link>
