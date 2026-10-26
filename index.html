@@ -37,8 +37,6 @@
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href="https://eregion.cn/" />
     <link rel="alternate" type="application/rss+xml" title="个人技术笔记" href="/feed.xml" />
-    <link rel="alternate" type="application/feed+json" title="个人技术笔记 · JSON Feed" href="/feed.json" />
-    <link rel="search" type="application/opensearchdescription+xml" title="个人技术笔记站内搜索" href="/opensearch.xml" />
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="个人技术笔记" />
@@ -4448,27 +4446,6 @@
           markActive();
         }
 
-        const SITE = location.origin;
-        /** 动态更新分享/搜索元信息（路由切换时） */
-        function setMeta(opt) {
-          const head = document.head;
-          const put = (sel, attr, val) => {
-            const el = head.querySelector(sel);
-            if (el && val) el.setAttribute(attr, val);
-          };
-          const title = opt.title || (DATA.name || "个人技术笔记");
-          document.title = title;
-          const desc =
-            opt.description || (DATA.tagline || "服务器运维、读书笔记、课程笔记与好文导读的长期归档。");
-          const url = opt.url || SITE + "/";
-          put('meta[name="description"]', "content", desc);
-          put('meta[property="og:title"]', "content", title);
-          put('meta[property="og:description"]', "content", desc);
-          put('meta[property="og:url"]', "content", url);
-          put('meta[name="twitter:title"]', "content", title);
-          put('meta[name="twitter:description"]', "content", desc);
-          put('link[rel="canonical"]', "href", url);
-        }
 
         function renderIndex() {
           resetTreeScroll();
@@ -4689,13 +4666,6 @@
           document.title = inChapter
             ? `${chapters[chap].title} · ${n.title} · ${DATA.name || "个人技术笔记"}`
             : `${n.title} · ${DATA.name || "个人技术笔记"}`;
-          setMeta({
-            title: document.title,
-            description:
-              n.summary ||
-              (inChapter ? MD.plain(chapters[chap].md.join("\n")).slice(0, 120) : ""),
-            url: SITE + "/?n=" + encodeURIComponent(n.slug),
-          });
           const chapEnter =
             !inChapter && chapters.length > 1
               ? `<div class="chap-enter-row"><a class="chap-enter" href="#/n/${n.slug}?c=0">按章阅读 · 共 ${chapters.length} 章 →</a></div>`
@@ -5784,13 +5754,6 @@
             spy = null;
           }
           let h = location.hash || "#/";
-          try {
-            setMeta({
-              title: DATA.name || "个人技术笔记",
-              description: DATA.tagline,
-              url: SITE + "/",
-            });
-          } catch (e) {}
           // 旧路由别名：/feed、/rss 等统一到订阅页
           const ROUTE_ALIAS = {
             "#/feed": "#/feeds",
@@ -5843,17 +5806,6 @@
             location.replace(
               `#/n/${encodeURIComponent(nslug)}${c !== null && c !== "" ? `?c=${c}` : ""}`,
             );
-          }
-          const q = sp.get("q");
-          if (q) {
-            setTimeout(() => {
-              try {
-                palOpen();
-                const inp = $("#palInput");
-                inp.value = q;
-                inp.dispatchEvent(new Event("input", { bubbles: true }));
-              } catch (e) {}
-            }, 500);
           }
         })();
 
