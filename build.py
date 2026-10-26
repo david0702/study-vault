@@ -49,7 +49,8 @@ DATA_FILE = PUBLIC / "vault.json"               # legacy full payload (fallback)
 INDEX_FILE = PUBLIC / "vault-index.json"        # manifest used by the SPA
 NOTES_OUT = PUBLIC / "vault-notes"              # one JSON per note
 SEARCH_FILE = PUBLIC / "search-index.json"      # full-text index, fetched on first Ctrl-K
-FEED_FILE = PUBLIC / "feed.xml"                 # RSS 2.0
+FEED_FILE = PUBLIC / "feed.xml"
+FEED_JSON = PUBLIC / "feed.json"                 # RSS 2.0
 SITEMAP_FILE = PUBLIC / "sitemap.xml"
 CONFIG = ROOT / "content" / "vault.json"
 
@@ -464,7 +465,9 @@ def main():
     # 5) RSS 2.0（订阅用；链接仍是 hash 路由，读者点开即可）
     recent = sorted(notes, key=lambda x: (x["updated"] or x["created"] or ""), reverse=True)
     items = []
+    json_items = []
     for idx, n in enumerate(recent):
+        json_html = ""
         desc = n["summary"] or plains.get(n["slug"], "")[:200]
         body = n["body"]
         # 只有最近 12 条带全文（控制 feed 体积）；更早的只留摘要
@@ -481,8 +484,20 @@ def main():
             content_tag = (
                 "      <content:encoded><![CDATA[" + html_body.replace("]]>", "]]&gt;") + "]]></content:encoded>"
             )
+            json_html = html_body
         else:
             content_tag = ""
+            json_html = ""
+        json_items.append({
+            "id": f"{SITE}/?n={n['slug']}",
+            "url": f"{SITE}/?n={n['slug']}",
+            "title": n["title"],
+            "summary": desc,
+            "content_html": json_html,
+            "date_published": (n["updated"] or n["created"] or latest) + "T00:00:00+08:00",
+            "tags": n["tags"],
+            "authors": [{"name": "个人技术笔记"}],
+        })
         items.append(
             f"""    <item>
       <title>{hesc(n['title'])}</title>
@@ -508,6 +523,30 @@ def main():
 </rss>
 """
     write_text(FEED_FILE, feed, "feed.xml")
+
+    # 5b) JSON Feed 1.1（阅读器/自动化友好）
+    json_feed = {
+        "version": "https://jsonfeed.org/version/1.1",
+        "title": vault["name"],
+        "home_page_url": SITE + "/",
+        "feed_url": SITE + "/feed.json",
+        "description": vault["tagline"] or "个人技术笔记",
+        "language": "zh-CN",
+        "items": json_items,
+    }
+    write_text(FEED_JSON, json.dumps(json_feed, ensure_ascii=False), "feed.json")
+
+    # 5c) OpenSearch：浏览器地址栏搜站内
+    opensearch = f"""<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>个人技术笔记</ShortName>
+  <Description>搜索站内笔记（标题、标签、正文）</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="32" height="32" type="image/svg+xml">{SITE}/favicon.svg</Image>
+  <Url type="text/html" template="{SITE}/?q={{searchTerms}}"/>
+</OpenSearchDescription>
+"""
+    write_text(PUBLIC / "opensearch.xml", opensearch, "opensearch.xml")
 
     # 6) sitemap：首页 + 每篇 /?n=<slug>（前端 boot 会重定向到 hash 路由）+ RSS
     latest = (recent[0]["updated"] or recent[0]["created"])[:10] if recent else datetime.now(TZ).strftime("%Y-%m-%d")
