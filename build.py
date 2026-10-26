@@ -213,6 +213,14 @@ def abs_url(u):
     return SITE + (u if u.startswith("/") else "/" + u)
 
 
+def search_text(plain):
+    """搜索索引用语料：去图片/URL、压空白，单篇上限 12000 字（控制体积）。"""
+    t = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", plain)
+    t = re.sub(r"https?://\S+", " ", t)
+    t = re.sub(r"\s+", " ", t)
+    return t[:12000]
+
+
 def plain_text(body):
     """Markdown -> plain text, 与前端 MD.plain() 保持一致（避免字数对不上）。"""
     s = re.sub(r"```[\s\S]*?```", " ", body)
@@ -447,7 +455,7 @@ def main():
                 "title": n["title"],
                 "folder": n["folder"],
                 "tags": n["tags"],
-                "text": plains.get(n["slug"], ""),
+                "text": search_text(plains.get(n["slug"], "")),
             }
             for n in notes
         ],
@@ -501,23 +509,33 @@ def main():
 """
     write_text(FEED_FILE, feed, "feed.xml")
 
-    # 6) sitemap：hash 路由下每篇没有独立 URL，只能先给首页
+    # 6) sitemap：首页 + 每篇 /?n=<slug>（前端 boot 会重定向到 hash 路由）+ RSS
     latest = (recent[0]["updated"] or recent[0]["created"])[:10] if recent else datetime.now(TZ).strftime("%Y-%m-%d")
-    sitemap = f"""<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
+    urls = [f"""  <url>
     <loc>{SITE}/</loc>
     <lastmod>{latest}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-  </url>
-  <url>
+  </url>"""]
+    for n in recent:
+        d = (n["updated"] or n["created"] or latest)[:10]
+        urls.append(f"""  <url>
+    <loc>{SITE}/?n={n['slug']}</loc>
+    <lastmod>{d}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>""")
+    urls.append(f"""  <url>
     <loc>{SITE}/feed.xml</loc>
     <changefreq>weekly</changefreq>
     <priority>0.4</priority>
-  </url>
-</urlset>
-"""
+  </url>""")
+    sitemap = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(urls)
+        + "\n</urlset>\n"
+    )
     write_text(SITEMAP_FILE, sitemap, "sitemap.xml")
 
     # 7) 按站内实际用字裁剪字体（字符集不变时脚本会自己跳过）
