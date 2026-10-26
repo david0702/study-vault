@@ -451,21 +451,25 @@ def main():
     # 5) RSS 2.0（订阅用；链接仍是 hash 路由，读者点开即可）
     recent = sorted(notes, key=lambda x: (x["updated"] or x["created"] or ""), reverse=True)
     items = []
-    for n in recent:
+    for idx, n in enumerate(recent):
         desc = n["summary"] or plains.get(n["slug"], "")[:200]
         body = n["body"]
-        if len(body) <= 80000:
-            html_body = md_to_html(body)
-        else:
-            titles = [c["title"] for c in split_chapters(body) if c["title"].strip()]
-            html_body = (
-                '<p><em>篇幅较长，全文请点标题阅读；章节目录：</em></p><ul>'
-                + "".join(f"<li>{html_escape(t)}</li>" for t in titles)
-                + "</ul>"
+        # 只有最近 12 条带全文（控制 feed 体积）；更早的只留摘要
+        if idx < 12:
+            if len(body) <= 80000:
+                html_body = md_to_html(body)
+            else:
+                titles = [c["title"] for c in split_chapters(body) if c["title"].strip()]
+                html_body = (
+                    '<p><em>篇幅较长，全文请点标题阅读；章节目录：</em></p><ul>'
+                    + "".join(f"<li>{html_escape(t)}</li>" for t in titles)
+                    + "</ul>"
+                )
+            content_tag = (
+                "      <content:encoded><![CDATA[" + html_body.replace("]]>", "]]&gt;") + "]]></content:encoded>"
             )
-        content_tag = (
-            "      <content:encoded><![CDATA[" + html_body.replace("]]>", "]]&gt;") + "]]></content:encoded>"
-        )
+        else:
+            content_tag = ""
         items.append(
             f"""    <item>
       <title>{hesc(n['title'])}</title>
