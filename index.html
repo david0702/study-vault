@@ -469,6 +469,29 @@
         scrollbar-width: thin;
       }
 
+      /* 章节模式：章节目录让位给章内小节目录 */
+      .side-r .side-body.note-mode.chap-mode .rblock-chaps {
+        flex: 0 1 auto;
+        max-height: 16vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+      .side-r .side-body.note-mode.chap-mode .rblock-outline {
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+      .side-r .side-body.note-mode.chap-mode .rblock-chaps h4 {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--surface);
+        padding-bottom: 6px;
+        margin-bottom: 4px;
+      }
+      .side-r .side-body.note-mode.chap-mode .rblock-extra {
+        max-height: 14vh;
+      }
+
       /* vault search */
       .vsearch {
         position: relative;
@@ -4924,7 +4947,7 @@
         function buildOutline(n, headings, chapters, inChapter) {
           const chapList =
             chapters && chapters.length > 1
-              ? `<div class="rblock rblock-toc"><h4>章节目录</h4>
+              ? `<div class="rblock rblock-toc rblock-chaps"><h4>章节目录</h4>
       <ul class="outline outline-chaps" id="chapList">${chapters
         .map(
           (c, i) =>
@@ -4942,7 +4965,7 @@
     ${chapList}
     ${ /* NOTE INFO 置顶 */
       showOutline
-        ? `<div class="rblock rblock-toc"><h4>On this page</h4>
+        ? `<div class="rblock rblock-toc rblock-outline"><h4>On this page</h4>
       <ul class="outline" id="outline">${headings
         .map(
           (h) =>
@@ -4974,6 +4997,22 @@
             "Note",
           );
           $("#rightBody").classList.add("note-mode");
+          $("#rightBody").classList.toggle("chap-mode", !!inChapter);
+          // 章节模式：章节列表变矮后，把当前章滚进可视区（垂直居中）
+          if (inChapter) {
+            const centerActiveChapter = () => {
+              const box = document.querySelector("#rightBody .rblock-chaps");
+              const act = box && box.querySelector("a.active");
+              if (!box || !act) return;
+              const cr = box.getBoundingClientRect();
+              const ar = act.getBoundingClientRect();
+              if (ar.top < cr.top || ar.bottom > cr.bottom) {
+                box.scrollTop += ar.top - cr.top - (cr.height - ar.height) / 2;
+              }
+            };
+            setTimeout(centerActiveChapter, 0);
+            setTimeout(centerActiveChapter, 150);
+          }
 
           const links = [...document.querySelectorAll("#outline a")];
           const targets = headings
