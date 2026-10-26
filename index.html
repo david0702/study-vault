@@ -5743,7 +5743,17 @@
             view.removeEventListener("scroll", spy);
             spy = null;
           }
-          const h = location.hash || "#/";
+          let h = location.hash || "#/";
+          // 旧路由别名：/feed、/rss 等统一到订阅页
+          const ROUTE_ALIAS = {
+            "#/feed": "#/feeds",
+            "#/rss": "#/feeds",
+            "#/subscribe": "#/feeds",
+          };
+          if (ROUTE_ALIAS[h]) {
+            location.replace(ROUTE_ALIAS[h]);
+            return;
+          }
           const q = h.split("?")[1] || "";
           const params = new URLSearchParams(q);
           const frag = params.get("h");
