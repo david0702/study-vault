@@ -1,7 +1,21 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="light" data-palette="yun">
   <head>
     <meta charset="utf-8" />
+    <script>
+      (function () {
+        try {
+          var d = document.documentElement;
+          var p = localStorage.getItem("sv:palette") || "yun";
+          var m = localStorage.getItem("sv:theme");
+          if (!m) {
+            m = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          }
+          d.setAttribute("data-palette", p);
+          d.setAttribute("data-theme", m);
+        } catch (e) {}
+      })();
+    </script>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -2174,6 +2188,23 @@
         0%, 100% { opacity: 1; }
         50% { opacity: 0.65; }
       }
+    
+/* 主题变量（静态生成，2026-10-26）：首屏由 <head> 内联脚本设置 data-palette/data-theme，避免刷新时闪默认皮肤 */
+:root{--bg:#f0e8d0;--surface:#f5efe0;--card:#fdfaf4;--card-2:#ffffff;--ink:#2d2318;--ink-2:#4d3f30;--muted:#6b5d4c;--faint:#6f6353;--line:#e0d5bd;--line-soft:#e9dfcb;--accent:#c7653c;--accent-ink:#a04528;--accent-soft:rgba(199,101,60,0.12);--accent-line:rgba(199,101,60,0.34);--ok:#5a8a5c;--warn:#c2913f;--info:#5b7fa6;--input-bg:rgba(0,0,0,0.04);--scrim-bg:rgba(45,35,24,0.35);--shadow-1:0 1px 2px rgba(45,35,24,0.06);--shadow-2:0 2px 6px rgba(45,35,24,0.07), 0 12px 32px rgba(45,35,24,0.08);--shadow-3:0 20px 60px rgba(45,35,24,0.16);}
+[data-palette="yun"]{--bg:#f0e8d0;--surface:#f5efe0;--card:#fdfaf4;--card-2:#ffffff;--ink:#2d2318;--ink-2:#4d3f30;--muted:#6b5d4c;--faint:#6f6353;--line:#e0d5bd;--line-soft:#e9dfcb;--accent:#c7653c;--accent-ink:#a04528;--accent-soft:rgba(199,101,60,0.12);--accent-line:rgba(199,101,60,0.34);--ok:#5a8a5c;--warn:#c2913f;--info:#5b7fa6;--input-bg:rgba(0,0,0,0.04);--scrim-bg:rgba(45,35,24,0.35);--shadow-1:0 1px 2px rgba(45,35,24,0.06);--shadow-2:0 2px 6px rgba(45,35,24,0.07), 0 12px 32px rgba(45,35,24,0.08);--shadow-3:0 20px 60px rgba(45,35,24,0.16);}
+[data-palette="sakura"]{--bg:#faf0f0;--surface:#fdf6f6;--card:#fffcfc;--card-2:#ffffff;--ink:#332428;--ink-2:#534044;--muted:#8a6e74;--faint:#b0989c;--line:#e8d4d6;--line-soft:#f0e0e2;--accent:#c47a8a;--accent-ink:#a05868;--accent-soft:rgba(196,122,138,0.12);--accent-line:rgba(196,122,138,0.34);--ok:#5a8a6c;--warn:#c2913f;--info:#6b84a6;--input-bg:rgba(0,0,0,0.035);--scrim-bg:rgba(50,30,35,0.35);--shadow-1:0 1px 2px rgba(50,30,35,0.06);--shadow-2:0 2px 6px rgba(50,30,35,0.07), 0 12px 32px rgba(50,30,35,0.08);--shadow-3:0 20px 60px rgba(50,30,35,0.16);}
+[data-palette="ai"]{--bg:#f0f3f8;--surface:#f5f8fc;--card:#fcfdfe;--card-2:#ffffff;--ink:#182233;--ink-2:#2d3a50;--muted:#5a6a84;--faint:#8a98b0;--line:#d4dce8;--line-soft:#e0e6f0;--accent:#5a7aac;--accent-ink:#3e5c8a;--accent-soft:rgba(90,122,172,0.12);--accent-line:rgba(90,122,172,0.34);--ok:#5a8a5c;--warn:#c2913f;--info:#5b7fa6;--input-bg:rgba(0,0,0,0.035);--scrim-bg:rgba(20,30,50,0.35);--shadow-1:0 1px 2px rgba(20,30,50,0.06);--shadow-2:0 2px 6px rgba(20,30,50,0.07), 0 12px 32px rgba(20,30,50,0.08);--shadow-3:0 20px 60px rgba(20,30,50,0.16);}
+[data-palette="koke"]{--bg:#eff2ea;--surface:#f4f7f0;--card:#fafcf8;--card-2:#ffffff;--ink:#1e241a;--ink-2:#384030;--muted:#66705a;--faint:#929c86;--line:#d4dcc8;--line-soft:#e0e6d4;--accent:#6a8a54;--accent-ink:#4e6a3c;--accent-soft:rgba(106,138,84,0.12);--accent-line:rgba(106,138,84,0.34);--ok:#5a8a5c;--warn:#c2913f;--info:#5b7fa6;--input-bg:rgba(0,0,0,0.035);--scrim-bg:rgba(25,35,20,0.35);--shadow-1:0 1px 2px rgba(25,35,20,0.06);--shadow-2:0 2px 6px rgba(25,35,20,0.07), 0 12px 32px rgba(25,35,20,0.08);--shadow-3:0 20px 60px rgba(25,35,20,0.16);}
+[data-palette="sumi"]{--bg:#f4f3f1;--surface:#f8f7f6;--card:#fdfdfc;--card-2:#ffffff;--ink:#1a1a1a;--ink-2:#3d3d3d;--muted:#6e6e6e;--faint:#999999;--line:#dbdbd8;--line-soft:#e6e6e3;--accent:#5a5a5a;--accent-ink:#3a3a3a;--accent-soft:rgba(90,90,90,0.1);--accent-line:rgba(90,90,90,0.3);--ok:#5a8a5c;--warn:#c2913f;--info:#5b7fa6;--input-bg:rgba(0,0,0,0.035);--scrim-bg:rgba(0,0,0,0.3);--shadow-1:0 1px 2px rgba(0,0,0,0.05);--shadow-2:0 2px 6px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.07);--shadow-3:0 20px 60px rgba(0,0,0,0.14);}
+[data-palette="kohaku"]{--bg:#fdf5ec;--surface:#fef9f4;--card:#fffefc;--card-2:#ffffff;--ink:#2d1f12;--ink-2:#4d3a28;--muted:#8a6e50;--faint:#b0987a;--line:#e8dcc8;--line-soft:#f0e6d4;--accent:#c0843c;--accent-ink:#a06828;--accent-soft:rgba(192,132,60,0.12);--accent-line:rgba(192,132,60,0.34);--ok:#5a8a5c;--warn:#c2913f;--info:#5b7fa6;--input-bg:rgba(0,0,0,0.035);--scrim-bg:rgba(45,30,15,0.35);--shadow-1:0 1px 2px rgba(45,30,15,0.06);--shadow-2:0 2px 6px rgba(45,30,15,0.07), 0 12px 32px rgba(45,30,15,0.08);--shadow-3:0 20px 60px rgba(45,30,15,0.16);}
+[data-palette="fuji"]{--bg:#f5f2fa;--surface:#f9f7fc;--card:#fefdfe;--card-2:#ffffff;--ink:#241e33;--ink-2:#3e3650;--muted:#6e6488;--faint:#9a90b0;--line:#dcd4e8;--line-soft:#e6e0f0;--accent:#8878b8;--accent-ink:#685898;--accent-soft:rgba(136,120,184,0.12);--accent-line:rgba(136,120,184,0.34);--ok:#5a8a5c;--warn:#c2913f;--info:#5b7fa6;--input-bg:rgba(0,0,0,0.035);--scrim-bg:rgba(35,30,50,0.35);--shadow-1:0 1px 2px rgba(35,30,50,0.06);--shadow-2:0 2px 6px rgba(35,30,50,0.07), 0 12px 32px rgba(35,30,50,0.08);--shadow-3:0 20px 60px rgba(35,30,50,0.16);}
+[data-palette="yun"][data-theme="dark"]{--bg:#594636;--surface:#4d3c2e;--card:#423326;--card-2:#382a1f;--ink:#efe4d4;--ink-2:#d4c8b4;--muted:#d3c6b3;--faint:#cbbda9;--line:#6b5a46;--line-soft:#5e4e3c;--accent:#e89464;--accent-ink:#f0b898;--accent-soft:rgba(232,148,100,0.14);--accent-line:rgba(232,148,100,0.36);--ok:#7aae7e;--warn:#d4ac63;--info:#84a6c9;--input-bg:rgba(0,0,0,0.22);--scrim-bg:rgba(0,0,0,0.5);--shadow-1:0 1px 2px rgba(0,0,0,0.3);--shadow-2:0 2px 8px rgba(0,0,0,0.28), 0 14px 34px rgba(0,0,0,0.34);--shadow-3:0 24px 70px rgba(0,0,0,0.5);}
+[data-palette="sakura"][data-theme="dark"]{--bg:#3d2e33;--surface:#33262b;--card:#2a1e23;--card-2:#22181c;--ink:#f0e4e8;--ink-2:#d4c8cc;--muted:#a69498;--faint:#8a7a7e;--line:#5e4a50;--line-soft:#4e3e44;--accent:#e0a0b0;--accent-ink:#f0c0cc;--accent-soft:rgba(224,160,176,0.14);--accent-line:rgba(224,160,176,0.36);--ok:#7aae8a;--warn:#d4ac63;--info:#8aa4c8;--input-bg:rgba(0,0,0,0.22);--scrim-bg:rgba(0,0,0,0.5);--shadow-1:0 1px 2px rgba(0,0,0,0.3);--shadow-2:0 2px 8px rgba(0,0,0,0.28), 0 14px 34px rgba(0,0,0,0.34);--shadow-3:0 24px 70px rgba(0,0,0,0.5);}
+[data-palette="ai"][data-theme="dark"]{--bg:#192233;--surface:#151d2b;--card:#111824;--card-2:#0e141e;--ink:#e4ecf6;--ink-2:#c8d4e4;--muted:#94a4bc;--faint:#7a8a9e;--line:#3a4860;--line-soft:#2e3a50;--accent:#8ab4e0;--accent-ink:#a8cef0;--accent-soft:rgba(138,180,224,0.14);--accent-line:rgba(138,180,224,0.36);--ok:#7aae8a;--warn:#d4ac63;--info:#8aa4c8;--input-bg:rgba(0,0,0,0.22);--scrim-bg:rgba(0,0,0,0.5);--shadow-1:0 1px 2px rgba(0,0,0,0.3);--shadow-2:0 2px 8px rgba(0,0,0,0.28), 0 14px 34px rgba(0,0,0,0.34);--shadow-3:0 24px 70px rgba(0,0,0,0.5);}
+[data-palette="koke"][data-theme="dark"]{--bg:#1d2319;--surface:#181e15;--card:#141912;--card-2:#10140e;--ink:#e8f0e0;--ink-2:#ccd4c4;--muted:#98a48e;--faint:#7e8a74;--line:#445038;--line-soft:#38442e;--accent:#8ab474;--accent-ink:#a8d094;--accent-soft:rgba(138,180,116,0.14);--accent-line:rgba(138,180,116,0.36);--ok:#7aae8a;--warn:#d4ac63;--info:#8aa4c8;--input-bg:rgba(0,0,0,0.22);--scrim-bg:rgba(0,0,0,0.5);--shadow-1:0 1px 2px rgba(0,0,0,0.3);--shadow-2:0 2px 8px rgba(0,0,0,0.28), 0 14px 34px rgba(0,0,0,0.34);--shadow-3:0 24px 70px rgba(0,0,0,0.5);}
+[data-palette="sumi"][data-theme="dark"]{--bg:#1b1b1b;--surface:#171717;--card:#131313;--card-2:#0f0f0f;--ink:#f0f0f0;--ink-2:#d0d0d0;--muted:#999999;--faint:#777777;--line:#3a3a3a;--line-soft:#2e2e2e;--accent:#c0c0c0;--accent-ink:#e0e0e0;--accent-soft:rgba(192,192,192,0.12);--accent-line:rgba(192,192,192,0.34);--ok:#7aae8a;--warn:#d4ac63;--info:#8aa4c8;--input-bg:rgba(255,255,255,0.06);--scrim-bg:rgba(0,0,0,0.55);--shadow-1:0 1px 2px rgba(0,0,0,0.3);--shadow-2:0 2px 8px rgba(0,0,0,0.28), 0 14px 34px rgba(0,0,0,0.34);--shadow-3:0 24px 70px rgba(0,0,0,0.5);}
+[data-palette="kohaku"][data-theme="dark"]{--bg:#2d2319;--surface:#261d14;--card:#1f1710;--card-2:#19120d;--ink:#f0e4d4;--ink-2:#d4c8b4;--muted:#a6947e;--faint:#8a7a66;--line:#5e4a36;--line-soft:#4e3e2e;--accent:#e0a854;--accent-ink:#f0c878;--accent-soft:rgba(224,168,84,0.14);--accent-line:rgba(224,168,84,0.36);--ok:#7aae8a;--warn:#d4ac63;--info:#8aa4c8;--input-bg:rgba(0,0,0,0.22);--scrim-bg:rgba(0,0,0,0.5);--shadow-1:0 1px 2px rgba(0,0,0,0.3);--shadow-2:0 2px 8px rgba(0,0,0,0.28), 0 14px 34px rgba(0,0,0,0.34);--shadow-3:0 24px 70px rgba(0,0,0,0.5);}
+[data-palette="fuji"][data-theme="dark"]{--bg:#242133;--surface:#1f1c2d;--card:#1a1727;--card-2:#151322;--ink:#ece8f6;--ink-2:#d0cce4;--muted:#a098c0;--faint:#847ca4;--line:#463e5c;--line-soft:#3a3250;--accent:#a898d8;--accent-ink:#c4b8ee;--accent-soft:rgba(168,152,216,0.14);--accent-line:rgba(168,152,216,0.36);--ok:#7aae8a;--warn:#d4ac63;--info:#8aa4c8;--input-bg:rgba(0,0,0,0.22);--scrim-bg:rgba(0,0,0,0.5);--shadow-1:0 1px 2px rgba(0,0,0,0.3);--shadow-2:0 2px 8px rgba(0,0,0,0.28), 0 14px 34px rgba(0,0,0,0.34);--shadow-3:0 24px 70px rgba(0,0,0,0.5);}
     </style>
     <style id="themeVars"></style>
       <style>
@@ -3788,21 +3819,11 @@
         let currentPalette = "yun";
         let currentMode = "light";
 
-        function writeVars(light, dark) {
-          // Batch all CSS variables into one <style> write → single style recalc
-          let css = ':root{';
-          for (const [k, v] of Object.entries(light)) css += k + ':' + v + ';';
-          css += '}[data-theme="dark"]{';
-          for (const [k, v] of Object.entries(dark)) css += k + ':' + v + ';';
-          css += '}';
-          $("#themeVars").textContent = css;
-        }
-
         function applyPalette(name) {
           currentPalette = name;
           store.set("palette", name);
-          const t = THEMES[name] || THEMES.yun;
-          writeVars(t.light, t.dark);
+          // 主题变量已静态写在 <style> 里，这里只切 data-palette（避免首屏闪默认皮肤）
+          document.documentElement.dataset.palette = THEMES[name] ? name : "yun";
           document.querySelectorAll(".theme-card").forEach((c) => c.classList.remove("active"));
           const card = document.querySelector('.theme-card[data-key="' + name + '"]');
           if (card) card.classList.add("active");
