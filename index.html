@@ -4207,7 +4207,6 @@
             }
           }
           const full = MD.parse(n.body, {...ctx, slug: n.slug});
-          const headings = full.headings;
           const chapters = splitChapters(n.body);
           if (Number.isInteger(chap) && chapters.length > 0) {
             chap = Math.max(0, Math.min(chap, chapters.length - 1));
@@ -4227,9 +4226,11 @@
           } else {
             n.__chap = null;
           }
-          const html = inChapter
-            ? MD.parse(chapters[chap].md.join("\n"), {...ctx, slug: n.slug}).html
-            : full.html;
+          const chapterParsed = inChapter
+            ? MD.parse(chapters[chap].md.join("\n"), {...ctx, slug: n.slug})
+            : null;
+          const headings = chapterParsed ? chapterParsed.headings : full.headings;
+          const html = chapterParsed ? chapterParsed.html : full.html;
           const sorted = [...notes].sort(byRecent);
           const idx = sorted.findIndex((x) => x.slug === slug);
           const prev = sorted[idx - 1],
