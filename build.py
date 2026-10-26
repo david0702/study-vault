@@ -454,9 +454,9 @@ def main():
     for idx, n in enumerate(recent):
         desc = n["summary"] or plains.get(n["slug"], "")[:200]
         body = n["body"]
-        # 只有最近 12 条带全文（控制 feed 体积）；更早的只留摘要
-        if idx < 12:
-            if len(body) <= 80000:
+        # 最近 24 条、正文 ≤30K 的才带全文（控制 feed 体积）
+        if idx < 24:
+            if len(body) <= 30000:
                 html_body = md_to_html(body)
             else:
                 titles = [c["title"] for c in split_chapters(body) if c["title"].strip()]
