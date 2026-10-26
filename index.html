@@ -2827,27 +2827,30 @@
       }
 
 
-      /* ---------- 侧栏收窄（2026-10-26） ---------- */
+
+
+
+      /* ---------- 图标栏收紧（2026-10-26） ---------- */
       body {
-        --left-w: 240px;
-        --right-w: 232px;
+        --ribbon-w: 44px;
       }
-      @media (max-width: 860px) {
-        body {
-          --left-w: 238px;
-        }
+      .ribbon {
+        gap: 2px;
+        padding: 8px 0 10px;
       }
-
-
-      /* ---------- 侧栏文件名省略号（2026-10-26） ---------- */
-      .side-l .row {
-        min-width: 0;
+      .mark {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        margin-bottom: 8px;
       }
-      .side-l .fname {
-        min-width: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+      .mark-img {
+        border-radius: 8px;
+      }
+      .rib {
+        width: 32px;
+        height: 32px;
+        border-radius: 7px;
       }
 
     </style>
