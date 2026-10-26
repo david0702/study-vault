@@ -2830,27 +2830,29 @@
 
 
 
-      /* ---------- 图标栏收紧（2026-10-26） ---------- */
-      body {
-        --ribbon-w: 44px;
-      }
-      .ribbon {
-        gap: 2px;
-        padding: 8px 0 10px;
-      }
-      .mark {
-        width: 26px;
-        height: 26px;
-        border-radius: 8px;
-        margin-bottom: 8px;
-      }
-      .mark-img {
-        border-radius: 8px;
-      }
-      .rib {
-        width: 32px;
-        height: 32px;
-        border-radius: 7px;
+      /* ---------- 图标栏收紧（仅移动端，2026-10-26） ---------- */
+      @media (max-width: 860px) {
+        body {
+          --ribbon-w: 44px;
+        }
+        .ribbon {
+          gap: 2px;
+          padding: 8px 0 10px;
+        }
+        .mark {
+          width: 26px;
+          height: 26px;
+          border-radius: 8px;
+          margin-bottom: 8px;
+        }
+        .mark-img {
+          border-radius: 8px;
+        }
+        .rib {
+          width: 32px;
+          height: 32px;
+          border-radius: 7px;
+        }
       }
 
     </style>
