@@ -2826,6 +2826,30 @@
         }
       }
 
+
+      /* ---------- 侧栏收窄（2026-10-26） ---------- */
+      body {
+        --left-w: 240px;
+        --right-w: 232px;
+      }
+      @media (max-width: 860px) {
+        body {
+          --left-w: 238px;
+        }
+      }
+
+
+      /* ---------- 侧栏文件名省略号（2026-10-26） ---------- */
+      .side-l .row {
+        min-width: 0;
+      }
+      .side-l .fname {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
     </style>
   </head>
   <body data-left="on" data-right="on" data-width="normal">
@@ -4123,7 +4147,7 @@
             kids.forEach((n) => {
               const kid = el("li", "file");
               kid.dataset.slug = n.slug;
-              kid.innerHTML = `<a class="row" href="#/n/${n.slug}">
+              kid.innerHTML = `<a class="row" href="#/n/${n.slug}" title="${MD.esc(n.title)}">
         ${folderIcon(n.folder || "Notes")}
         <span class="fname">${MD.esc(n.title)}</span></a>`;
               ul.appendChild(kid);
