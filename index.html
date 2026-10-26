@@ -4853,7 +4853,8 @@
 
         function renderTag(tag) {
           resetTreeScroll();
-          const list = browseNotes.filter((n) => n.tags.includes(tag)).sort(byRecent);
+          // 标签页包含转载笔记（否则从转载文章点 #weekly 会是空页）
+          const list = notes.filter((n) => n.tags.includes(tag)).sort(byRecent);
           document.title = `#${tag} · ${DATA.name || "个人技术笔记"}`;
           crumbs([
             {label: DATA.name || "Vault", href: "#/"},
@@ -5741,6 +5742,18 @@
           if (/^#\/($|tag\/|recent)/.test(h)) restoreListScroll();
         }
         addEventListener("hashchange", route);
+
+        // 支持 /?n=slug&c=i 直达（RSS 链接用 query 而非 hash，兼容部分阅读器）
+        (function () {
+          const sp = new URLSearchParams(location.search);
+          const nslug = sp.get("n");
+          if (nslug && !location.hash) {
+            const c = sp.get("c");
+            location.replace(
+              `#/n/${encodeURIComponent(nslug)}${c !== null && c !== "" ? `?c=${c}` : ""}`,
+            );
+          }
+        })();
 
         /* ---------- boot ---------- */
         buildTree();

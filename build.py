@@ -109,6 +109,10 @@ def split_chapters(body):
             cur["md"].append(line)
     if cur["title"] or "\n".join(cur["md"]).strip():
         secs.append(cur)
+    # 合并开头的无标题前言（转载声明等）到第一章，避免空标题章节
+    if len(secs) > 1 and not secs[0]["title"].strip():
+        pre = secs.pop(0)
+        secs[0]["md"] = pre["md"] + secs[0]["md"]
     return secs
 
 
@@ -394,6 +398,7 @@ def main():
             "source_url": n["source_url"],
             "license": n["license"],
             "modified": n["modified"],
+            "repost": n["folder"].strip() == "60 转载",
             "split": len(n["body"]) > 150000,
             "chapters": len(split_chapters(n["body"])),
             "summary": n["summary"],
@@ -454,9 +459,9 @@ def main():
     for idx, n in enumerate(recent):
         desc = n["summary"] or plains.get(n["slug"], "")[:200]
         body = n["body"]
-        # 最近 24 条、正文 ≤30K 的才带全文（控制 feed 体积）
-        if idx < 24:
-            if len(body) <= 30000:
+        # 只有最近 12 条带全文（控制 feed 体积）；更早的只留摘要
+        if idx < 12:
+            if len(body) <= 80000:
                 html_body = md_to_html(body)
             else:
                 titles = [c["title"] for c in split_chapters(body) if c["title"].strip()]
@@ -473,7 +478,7 @@ def main():
         items.append(
             f"""    <item>
       <title>{hesc(n['title'])}</title>
-      <link>{SITE}/#/n/{n['slug']}</link>
+      <link>{SITE}/?n={n['slug']}</link>
       <guid isPermaLink="false">{SITE}/n/{n['slug']}</guid>
       <pubDate>{rfc822(n['updated'] or n['created'])}</pubDate>
       <category>{hesc(n['folder'])}</category>
