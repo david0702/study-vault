@@ -22,7 +22,7 @@
     />
     <link
       rel="preload"
-      href="/fonts/ShangguSerifJP-Medium.woff2"
+      href="/fonts/ShangguSerifJP-Medium.woff2?v=3"
       as="font"
       type="font/woff2"
       crossorigin
@@ -69,21 +69,21 @@
       @font-face {
         font-display: swap;
         font-family: "上古明朝体";
-        src: url("fonts/ShangguSerifJP-Medium.woff2") format("woff2");
+        src: url("fonts/ShangguSerifJP-Medium.woff2?v=3") format("woff2");
         font-weight: normal;
         font-style: normal;
       }
       @font-face {
         font-display: swap;
         font-family: "更沙黑体";
-        src: url("fonts/Sarasa_Gothic_J.woff2") format("woff2");
+        src: url("fonts/Sarasa_Gothic_J.woff2?v=3") format("woff2");
         font-weight: 400;
         font-style: normal;
       }
       @font-face {
         font-display: swap;
         font-family: "更沙黑体";
-        src: url("fonts/Sarasa_Gothic_J_Semibold.woff2") format("woff2");
+        src: url("fonts/Sarasa_Gothic_J_Semibold.woff2?v=3") format("woff2");
         font-weight: 600;
         font-style: normal;
       }
@@ -1727,6 +1727,18 @@
         border-left-color: var(--accent);
         font-weight: 500;
       }
+      /* 键盘焦点：全站可见的 focus ring（鼠标点击不显示，仅键盘触发） */
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+      a:focus:not(:focus-visible),
+      button:focus:not(:focus-visible),
+      input:focus:not(:focus-visible) {
+        outline: none;
+      }
+
       .rblock {
         margin-bottom: 24px;
       }
@@ -2006,21 +2018,21 @@
         @font-face {
         font-display: swap;
           font-family: "上古明朝体";
-          src: url("fonts/ShangguSerifJP-Medium.woff2") format("woff2");
+          src: url("fonts/ShangguSerifJP-Medium.woff2?v=3") format("woff2");
           font-weight: normal;
           font-style: normal;
         }
         @font-face {
         font-display: swap;
           font-family: "更沙黑体";
-          src: url("fonts/Sarasa_Gothic_J.woff2") format("woff2");
+          src: url("fonts/Sarasa_Gothic_J.woff2?v=3") format("woff2");
           font-weight: 400;
           font-style: normal;
         }
         @font-face {
         font-display: swap;
           font-family: "更沙黑体";
-          src: url("fonts/Sarasa_Gothic_J_Semibold.woff2") format("woff2");
+          src: url("fonts/Sarasa_Gothic_J_Semibold.woff2?v=3") format("woff2");
           font-weight: 600;
           font-style: normal;
         }
@@ -5166,7 +5178,8 @@
         let palResults = [],
           palSel = 0;
 
-        /* 全文索引：第一次打开 Ctrl-K 时才拉（约 200 KB，gzip ~60 KB） */
+        /* 全文索引：全站正文（1.84 MB / gzip ~700 KB）。进站空闲时预载，
+           门控：页面可见 + 非 saveData/2G + deviceMemory >= 2；不满足就等 Ctrl-K 时按需拉。 */
         let SEARCH = null;
         let searchLoading = null;
         function ensureSearch() {
@@ -5228,7 +5241,7 @@
                 .map((x) => x.n);
           palSel = 0;
           if (q.length >= 2 && !SEARCH) {
-            palList.innerHTML = `<li class="pal-none">正在加载全文索引…（首次搜索约 200 KB）</li>`;
+            palList.innerHTML = `<li class="pal-none">正在加载全站索引…（约 0.7 MB，只拉一次）</li>`;
             ensureSearch().then(() => {
               if (scrim.classList.contains("on")) palPaint();
             });
@@ -5654,8 +5667,13 @@
                 ctx2.font = `500 ${on ? 12 : 11}px Inter, system-ui, sans-serif`;
                 ctx2.fillStyle = on ? ink : faint;
                 ctx2.textAlign = "center";
-                const label =
-                  n.title.length > 26 ? n.title.slice(0, 25) + "…" : n.title;
+                let label = n.title;
+                if (label.length > 26) {
+                  // 先去掉"科技爱好者周刊（第 N 期）："这类公共前缀，留住"这期讲什么"
+                  const cut = label.search(/[：:]/);
+                  if (cut >= 0 && label.length - cut - 1 >= 4) label = label.slice(cut + 1);
+                  if (label.length > 26) label = label.slice(0, 25) + "…";
+                }
                 ctx2.fillText(label, n.x, n.y - rad(n) - 7);
               }
             });
@@ -5861,6 +5879,37 @@
         } else {
           route();
         }
+        /* 空闲预载全文索引（不阻塞首屏；爬虫/后台标签/省流模式不拉） */
+        const prefetchSearch = () => {
+          if (SEARCH || searchLoading) return;
+          if (document.visibilityState !== "visible") return;
+          const c = navigator.connection || {};
+          if (c.saveData || /(^|-)2g$/.test(c.effectiveType || "")) return;
+          if (navigator.deviceMemory && navigator.deviceMemory < 2) return;
+          ensureSearch();
+        };
+        if (document.visibilityState === "visible") {
+          addEventListener("load", () => {
+            setTimeout(prefetchSearch, 1500);
+            if (window.requestIdleCallback) requestIdleCallback(prefetchSearch, { timeout: 8000 });
+          });
+        } else {
+          document.addEventListener("visibilitychange", function onVis() {
+            if (document.visibilityState !== "visible") return;
+            document.removeEventListener("visibilitychange", onVis);
+            setTimeout(prefetchSearch, 1200);
+          });
+        }
+
+        /* 交互兜底：hover 搜索按钮 / 按下 Ctrl-K 时立刻预载（比 idle 更早） */
+        (function () {
+          const s = document.getElementById("btnSearch2");
+          if (s) s.addEventListener("pointerenter", prefetchSearch, { once: true });
+          addEventListener("keydown", (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key || "").toLowerCase() === "k") prefetchSearch();
+          });
+        })();
+
         addEventListener("load", () =>
           setTimeout(() => MD.renderMath(document.body), 60),
         );

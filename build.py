@@ -214,11 +214,15 @@ def abs_url(u):
 
 
 def search_text(plain):
-    """搜索索引用语料：去图片/URL、压空白，单篇上限 12000 字（控制体积）。"""
+    """搜索索引用语料：去图片/URL、压空白。
+
+    2026-10-28：取消单篇 12000 字上限——用户选择"全量 + 进站空闲预载"。
+    索引 689 KB → 1.84 MB（gzip 292 → 700 KB），换来长文后半本可搜。
+    """
     t = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", plain)
     t = re.sub(r"https?://\S+", " ", t)
     t = re.sub(r"\s+", " ", t)
-    return t[:12000]
+    return t
 
 
 def plain_text(body):
@@ -238,6 +242,54 @@ def plain_text(body):
 
 
 CJK_RE = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
+
+
+SKIP_SUMMARY_PREFIXES = (
+    "转载说明",
+    "转载声明",
+    "本文全文转载",
+    "本站",
+    "本杂志开源",
+    "HelloGitHub 分享",
+    "这里记录每周值得分享",
+    "封面图",
+    "封面：",
+)
+
+
+def plain_summary(text):
+    """summary 会进卡片、meta description、RSS，这些地方不渲染 markdown。"""
+    s = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", text)
+    s = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", s)
+    s = re.sub(r"[*_`~]", "", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def derive_summary(body, limit=110):
+    """frontmatter 没写 summary 时，从正文首段自动摘一句（跳过转载声明/标题/代码块）。"""
+    text = re.sub(r"(?m)^\s*>\s?.*$", "", body)
+    text = re.sub(r"```.*?```", "", text, flags=re.S)
+    for block in re.split(r"\n\s*\n", text):
+        s = block.strip()
+        if not s or s.startswith("#"):
+            continue
+        s = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", s)
+        s = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", s)
+        s = re.sub(r"<[^>]+>", "", s)
+        s = re.sub(r"[*_`#>|]", "", s)
+        s = re.sub(r"\s+", " ", s).strip()
+        if len(s) < 20:
+            continue
+        if any(s.startswith(p) for p in SKIP_SUMMARY_PREFIXES):
+            continue
+        if "未获得转载授权" in s:
+            continue
+        # 图片说明（"上海某展览。（via xxx）"）当摘要没有意义
+        if re.search(r"[（(]via\b", s, re.I) and len(s) < 90:
+            continue
+        return s[:limit].rstrip() + ("…" if len(s) > limit else "")
+    return ""
 
 
 def collect():
@@ -263,7 +315,7 @@ def collect():
             "source_url": str(meta.get("source_url") or "").strip(),
             "license": str(meta.get("license") or "").strip(),
             "modified": str(meta.get("modified") or "").strip(),
-            "summary": str(meta.get("summary") or "").strip(),
+            "summary": plain_summary(str(meta.get("summary") or "").strip()) or derive_summary(body),
             "body": body.rstrip() + "\n",
         })
 
@@ -509,7 +561,7 @@ def main():
 """
     write_text(FEED_FILE, feed, "feed.xml")
 
-    # 6) sitemap：首页 + 每篇 /?n=<slug>（前端 boot 会重定向到 hash 路由）+ RSS
+    # 6) sitemap：首页 + 每篇静态落地页 /n/<slug>/ + RSS
     latest = (recent[0]["updated"] or recent[0]["created"])[:10] if recent else datetime.now(TZ).strftime("%Y-%m-%d")
     urls = [f"""  <url>
     <loc>{SITE}/</loc>
@@ -520,7 +572,7 @@ def main():
     for n in recent:
         d = (n["updated"] or n["created"] or latest)[:10]
         urls.append(f"""  <url>
-    <loc>{SITE}/?n={n['slug']}</loc>
+    <loc>{SITE}/n/{n['slug']}/</loc>
     <lastmod>{d}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -537,6 +589,13 @@ def main():
         + "\n</urlset>\n"
     )
     write_text(SITEMAP_FILE, sitemap, "sitemap.xml")
+
+    # 6.5) 静态分享页 + 每篇 OG 卡（SPA 的 meta 对爬虫/聊天预览是空的）
+    try:
+        import share_pages
+        share_pages.generate(vault, notes, SITE, PUBLIC, ROOT / ".fonts-src" / "Sarasa_Gothic_J.woff2")
+    except Exception as exc:
+        print(f"  ! share pages skipped: {exc}", file=sys.stderr)
 
     # 7) 按站内实际用字裁剪字体（字符集不变时脚本会自己跳过）
     try:

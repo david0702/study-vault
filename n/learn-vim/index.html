@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Learn Vim（智能地学 Vim） · 个人技术笔记</title>
+<meta name="description" content="Igor Irianto 的 Vim 学习指南，从基础操作到 Vimscript，共 30 章。CC BY-NC-SA 4.0 全文转载。">
+<link rel="canonical" href="https://eregion.cn/n/learn-vim/">
+<meta name="theme-color" content="#f0e8d0">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="个人技术笔记">
+<meta property="og:title" content="Learn Vim（智能地学 Vim）">
+<meta property="og:description" content="Igor Irianto 的 Vim 学习指南，从基础操作到 Vimscript，共 30 章。CC BY-NC-SA 4.0 全文转载。">
+<meta property="og:url" content="https://eregion.cn/n/learn-vim/">
+<meta property="og:image" content="https://eregion.cn/media/og/learn-vim.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" href="https://eregion.cn/feed.xml" title="个人技术笔记">
+<style>
+:root{color-scheme:light dark}
+*{box-sizing:border-box}
+body{margin:0;background:#f0e8d0;color:#2d2318;
+ font:16px/1.75 "Sarasa Gothic J","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:56px 24px 80px}
+.crumb{font-size:12.5px;letter-spacing:.08em;color:#6b5d4c;text-transform:uppercase;margin:0 0 18px}
+.crumb a{color:#6b5d4c;text-decoration:none;border-bottom:1px solid #e0d5bd}
+h1{font-size:34px;line-height:1.35;margin:0 0 14px;font-weight:600}
+.meta{font-size:13px;color:#6b5d4c;margin:0 0 22px}
+.lead{font-size:17px;margin:0 0 26px;padding:18px 20px;background:#fdfaf4;
+ border-left:3px solid #c7653c;border-radius:0 6px 6px 0}
+h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#6f6353;
+ margin:36px 0 12px;font-weight:600}
+ol.chaps{margin:0;padding-left:22px;font-size:14.5px;color:#4d3f30}
+ol.chaps li{margin:5px 0}
+ul.sibs{list-style:none;margin:0;padding:0}
+ul.sibs li{padding:8px 0;border-bottom:1px solid #e9dfcb;font-size:14.5px}
+ul.sibs a{color:#a04528;text-decoration:none}
+ul.sibs a:hover{text-decoration:underline}
+.cta{display:inline-block;margin:30px 0 8px;padding:11px 20px;border-radius:6px;
+ background:#c7653c;color:#fff;text-decoration:none;font-size:14.5px}
+.repost{font-size:13px;color:#6b5d4c;background:#fdfaf4;padding:12px 14px;border-radius:6px;margin:0 0 24px}
+.repost a{color:#a04528}
+.foot{margin-top:44px;font-size:13px;color:#6b5d4c;border-top:1px solid #e0d5bd;padding-top:16px}
+.foot a{color:#a04528;text-decoration:none}
+@media (prefers-color-scheme:dark){
+ body{background:#2b2118;color:#efe6d6}
+ .crumb,.meta,.repost,.foot{color:#c9bca8}
+ .lead{background:#352a1f}
+ h2{color:#c9bca8}
+ ol.chaps{color:#e4d8c6}
+ ul.sibs li{border-color:#443628}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<p class="crumb"><a href="https://eregion.cn/">个人技术笔记</a> / 70 书籍转载</p>
+<h1>Learn Vim（智能地学 Vim）</h1>
+<p class="meta">2026-10-26 → 2026-10-27 · 约 301 分钟 · #转载 #vim #书籍</p>
+<p class="repost">转载 / 导读 · 来源：<a href="https://github.com/iggredible/Learn-Vim">Igor Irianto · Learn Vim (the Smart Way)</a> · 许可：CC BY-NC-SA 4.0 · 转换为本站 Markdown 排版（章节标题降级、加章节导航），正文未改动</p>
+<p class="lead">Igor Irianto 的 Vim 学习指南，从基础操作到 Vimscript，共 30 章。CC BY-NC-SA 4.0 全文转载。</p>
+<h2>目录</h2>
+<ol class="chaps">
+<li>Ch00. Read This First</li>
+<li>Ch01. Starting Vim</li>
+<li>Ch02. Buffers, Windows, and Tabs</li>
+<li>Ch03. Searching Files</li>
+<li>Ch04. Vim Grammar</li>
+<li>Ch05. Moving in a File</li>
+<li>Ch06. Insert Mode</li>
+<li>Ch07. The Dot Command</li>
+<li>Ch08. Registers</li>
+<li>Ch09. Macros</li>
+<li>Ch10. Undo</li>
+<li>Ch11. Visual Mode</li>
+<li>Ch12. Search and Substitute</li>
+<li>Ch13. The Global Command</li>
+<li>Ch14. External Commands</li>
+<li>Ch15. Command-line Mode</li>
+<li>Ch16. Tags</li>
+<li>Ch17. Fold</li>
+<li>Ch18. Git</li>
+<li>Ch19. Compile</li>
+<li>Ch20. Views, Sessions, and Viminfo</li>
+<li>Ch21. Multiple File Operations</li>
+<li>Ch22. Vimrc</li>
+<li>Ch23. Vim Packages</li>
+<li>Ch24. Vim Runtime</li>
+<li>Ch25. Vimscript Basic Data Types</li>
+<li>Ch26. Vimscript Conditionals and Loops</li>
+<li>Ch27. Vimscript Variable Scopes</li>
+<li>Ch28. Vimscript Functions</li>
+<li>Ch29. Write a Plugin: Creating a Titlecase Operator</li>
+</ol>
+<h2>同栏目 · 70 书籍转载</h2>
+<ul class="sibs">
+<li><a href="https://eregion.cn/n/hello-algo/">Hello 算法（hello-algo）</a></li>
+<li><a href="https://eregion.cn/n/learn-vim-zh/">Learn Vim（智能地学 Vim）· 中文版</a></li>
+</ul>
+<p><a class="cta" href="https://eregion.cn/?n=learn-vim">进入站内阅读全文 →</a></p>
+<p class="foot"><a href="https://eregion.cn/">← 全部笔记</a> · <a href="https://eregion.cn/feed.xml">RSS</a> · <a href="https://eregion.cn/#/n/learn-vim">站内直链</a></p>
+</div>
+</body>
+</html>
