@@ -570,6 +570,10 @@ def main():
     <priority>1.0</priority>
   </url>"""]
     for n in recent:
+        _f = n.get("folder") or ""
+        if (n.get("source") or n.get("license")
+                or _f.startswith(("50 ", "60 ", "70 "))):
+            continue  # 转载/译本页 noindex，不进 sitemap
         d = (n["updated"] or n["created"] or latest)[:10]
         urls.append(f"""  <url>
     <loc>{SITE}/n/{n['slug']}/</loc>

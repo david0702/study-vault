@@ -18,7 +18,7 @@
     </script>
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
+      content="width=device-width, viewport-fit=cover"
     />
     <link
       rel="preload"
@@ -53,7 +53,6 @@
     <meta name="twitter:title" content="个人技术笔记" />
     <meta name="twitter:description" content="服务器运维、读书笔记、课程笔记与好文导读的长期归档。" />
     <meta name="twitter:image" content="https://eregion.cn/og-card.png" />
-
 
     <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" sizes="any" />
     <link rel="icon" href="/favicon.ico?v=2" sizes="16x16 32x32 48x48" />
@@ -1109,6 +1108,21 @@
         gap: 6px;
         margin: 16px 0 0;
       }
+      .share-btn {
+        margin-left: auto;
+        padding: 3px 11px;
+        font: inherit;
+        font-size: 11.5px;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        cursor: pointer;
+      }
+      .share-btn:hover {
+        color: var(--accent-ink);
+        border-color: var(--accent-line);
+      }
 
       /* pdf panel */
       .repost-line {
@@ -2015,27 +2029,8 @@
         pointer-events: auto;
       }
       @media (max-width: 1180px) {
-        @font-face {
-        font-display: swap;
-          font-family: "上古明朝体";
-          src: url("fonts/ShangguSerifJP-Medium.woff2?v=3") format("woff2");
-          font-weight: normal;
-          font-style: normal;
-        }
-        @font-face {
-        font-display: swap;
-          font-family: "更沙黑体";
-          src: url("fonts/Sarasa_Gothic_J.woff2?v=3") format("woff2");
-          font-weight: 400;
-          font-style: normal;
-        }
-        @font-face {
-        font-display: swap;
-          font-family: "更沙黑体";
-          src: url("fonts/Sarasa_Gothic_J_Semibold.woff2?v=3") format("woff2");
-          font-weight: 600;
-          font-style: normal;
-        }
+
+        
         :root {
           --right-w: 0px;
         }
@@ -2257,7 +2252,6 @@
 [data-palette="kohaku"][data-theme="dark"]{--bg:#2d2319;--surface:#261d14;--card:#1f1710;--card-2:#19120d;--ink:#f0e4d4;--ink-2:#d4c8b4;--muted:#a6947e;--faint:#8a7a66;--line:#5e4a36;--line-soft:#4e3e2e;--accent:#e0a854;--accent-ink:#f0c878;--accent-soft:rgba(224,168,84,0.14);--accent-line:rgba(224,168,84,0.36);--ok:#7aae8a;--warn:#d4ac63;--info:#8aa4c8;--input-bg:rgba(0,0,0,0.22);--scrim-bg:rgba(0,0,0,0.5);--shadow-1:0 1px 2px rgba(0,0,0,0.3);--shadow-2:0 2px 8px rgba(0,0,0,0.28), 0 14px 34px rgba(0,0,0,0.34);--shadow-3:0 24px 70px rgba(0,0,0,0.5);}
 [data-palette="fuji"][data-theme="dark"]{--bg:#242133;--surface:#1f1c2d;--card:#1a1727;--card-2:#151322;--ink:#ece8f6;--ink-2:#d0cce4;--muted:#a098c0;--faint:#847ca4;--line:#463e5c;--line-soft:#3a3250;--accent:#a898d8;--accent-ink:#c4b8ee;--accent-soft:rgba(168,152,216,0.14);--accent-line:rgba(168,152,216,0.36);--ok:#7aae8a;--warn:#d4ac63;--info:#8aa4c8;--input-bg:rgba(0,0,0,0.22);--scrim-bg:rgba(0,0,0,0.5);--shadow-1:0 1px 2px rgba(0,0,0,0.3);--shadow-2:0 2px 8px rgba(0,0,0,0.28), 0 14px 34px rgba(0,0,0,0.34);--shadow-3:0 24px 70px rgba(0,0,0,0.5);}
     </style>
-    <style id="themeVars"></style>
       <style>
       /* 备案号悬挂（管局要求，2026-10 起） */
       #ft {
@@ -2338,6 +2332,18 @@
         font-size: 11px;
         color: var(--faint);
         margin-top: 6px;
+      }
+      .info-resume {
+        margin-top: 8px;
+        font-size: 12px;
+      }
+      .info-resume a {
+        color: var(--accent-ink);
+        text-decoration: none;
+        border-bottom: 1px solid var(--accent-line);
+      }
+      .info-resume a:hover {
+        border-bottom-color: var(--accent);
       }
       .lightbox {
         position: fixed;
@@ -2702,7 +2708,6 @@
         .hero-rule { margin-top: 22px; }
       }
 
-
       /* ---------- 移动端优化 2026-10-26 ---------- */
       #readProgress {
         display: none;
@@ -2870,10 +2875,6 @@
         }
       }
 
-
-
-
-
       /* ---------- 图标栏收紧（仅移动端，2026-10-26） ---------- */
       @media (max-width: 860px) {
         body {
@@ -2898,7 +2899,6 @@
           border-radius: 7px;
         }
       }
-
 
       /* 代码块横向滚动可见性（2026-10-26） */
       .md pre {
@@ -3605,7 +3605,6 @@
             );
           }
 
-          
           return {html: out.join("\n"), headings};
         }
 
@@ -3756,6 +3755,66 @@
               /* private mode */
             }
           },
+        };
+
+        /* ---------- 阅读位置记忆（localStorage，按 slug） ---------- */
+        const READ_MAP_KEY = "sv:read";
+        let restoringRead = false;
+        let lastNoteSlug = null;
+        const readAll = () => {
+          try {
+            return JSON.parse(localStorage.getItem(READ_MAP_KEY) || "{}") || {};
+          } catch (e) {
+            return {};
+          }
+        };
+        const getRead = (slug) => readAll()[slug] || null;
+        const saveRead = (slug, rec) => {
+          try {
+            const m = readAll();
+            m[slug] = Object.assign({}, rec, { t: Date.now() });
+            const keys = Object.keys(m);
+            if (keys.length > 200) {
+              keys
+                .sort((a, b) => (m[a].t || 0) - (m[b].t || 0))
+                .slice(0, keys.length - 200)
+                .forEach((k) => delete m[k]);
+            }
+            localStorage.setItem(READ_MAP_KEY, JSON.stringify(m));
+          } catch (e) {}
+        };
+        // 用"标题 id + 相对偏移"落位：全文模式与分章模式都能对上
+        const applyRead = (slug, rec) => {
+          if (!rec) return false;
+          const el = rec.h ? document.getElementById(rec.h) : null;
+          if (el) {
+            view.scrollTop +=
+              el.getBoundingClientRect().top -
+              view.getBoundingClientRect().top -
+              12 -
+              (rec.off || 0);
+          } else {
+            view.scrollTop = rec.y || 0;
+          }
+          if (spy) spy();
+          return true;
+        };
+        const resumeRead = (n) => {
+          const rec = getRead(n.slug);
+          if (!rec) return;
+          restoringRead = true;
+          const done = () => {
+            applyRead(n.slug, rec);
+            toast(`已回到上次阅读位置 · ${rec.p || 0}%`);
+            setTimeout(() => (restoringRead = false), 900);
+          };
+          // 分章笔记：上次停在别的章 → 先切到那一章
+          if (rec.c != null && n.__chapIndex !== rec.c) {
+            location.hash = `#/n/${n.slug}?c=${rec.c}`;
+            setTimeout(done, 420);
+          } else {
+            setTimeout(done, 60);
+          }
         };
 
         /* ---------- data ---------- */
@@ -4481,7 +4540,6 @@
           markActive();
         }
 
-
         function renderIndex() {
           resetTreeScroll();
           crumbs([{label: DATA.name || "个人技术笔记"}]);
@@ -4509,6 +4567,26 @@
       </div>
       <div class="hero-rule"></div>
     </header>
+
+    ${(() => {
+      const m = readAll();
+      const ks = Object.keys(m)
+        .filter(
+          (k) =>
+            bySlug.get(k) &&
+            (m[k].p || 0) >= 5 &&
+            (m[k].p || 0) < 95,
+        )
+        .sort((a, b) => (m[b].t || 0) - (m[a].t || 0));
+      if (!ks.length) return "";
+      const k = ks[0];
+      const nn = bySlug.get(k);
+      return `<section class="sec rise d1">
+      <div class="sec-head"><span class="sec-title">继续阅读</span><span class="sec-rule"></span>
+        <span class="sec-note">上次读到 ${m[k].p}%</span></div>
+      <div class="chips"><a class="chip" href="#/n/${nn.slug}">${MD.esc(nn.title)}</a></div>
+    </section>`;
+    })()}
 
     <section class="sec rise d1">
       <div class="sec-head"><span class="sec-title">Filter by tag</span><span class="sec-rule"></span>
@@ -4617,6 +4695,9 @@
         async function renderNote(slug, hash, chap) {
           const n = bySlug.get(slug);
           if (!n) return renderMissing(slug);
+          // 首帧 spy() 会以 scrollTop=0 触发一次保存，先把写入锁住并提前取记录
+          restoringRead = true;
+          const savedRec = getRead(n.slug);
           const wantsChapter = Number.isInteger(chap) && chap >= 0;
           let chapterBody = null;
           let chapters = null;
@@ -4742,6 +4823,7 @@
           <span>${readTimeLabel(n)}</span><span class="sep"></span>
           <span>${n.chars.toLocaleString()} 字符</span><span class="sep"></span>
           <span class="meta-links">${n.out.size} out · ${n.in.size} in</span>
+          <button class="share-btn" type="button" data-slug="${n.slug}" title="复制分享链接（带预览卡片）">分享</button>
         </div>
         ${n.tags.length ? `<div class="note-tags">${n.tags.map((t) => `<a class="chip" href="#/tag/${t}">#${MD.esc(t)}</a>`).join("")}</div>` : ""}
       </header>
@@ -4823,6 +4905,7 @@
 
           wireCode();
           wirePdf(n);
+          wireShare(n);
           buildOutline(n, headings, chapters, inChapter);
           markActive();
           revealActiveFile();
@@ -4834,7 +4917,33 @@
               t = [...hs].find((h) => h.id.startsWith(hash)) || null;
             }
             if (t) scrollToEl(t);
-          } else view.scrollTop = 0;
+          } else {
+            // 从别的页面进入本篇：回到上次阅读位置（同篇切章 / 带锚点时不动）
+            const rec = savedRec;
+            const sameNote = lastNoteSlug === n.slug;
+            // 分章的偏移只在同一章里有意义；全文模式则要求记录也来自全文模式
+            const modeOk = rec && (inChapter ? rec.c === chap : rec.c == null);
+            if (rec && modeOk && !sameNote && (rec.p || 0) >= 5 && (rec.p || 0) < 92) {
+              restoringRead = true;
+              setTimeout(() => {
+                applyRead(n.slug, rec);
+                toast(`已回到上次阅读位置 · ${rec.p}%`);
+                setTimeout(() => (restoringRead = false), 900);
+              }, 200);
+            } else {
+              view.scrollTop = 0;
+            }
+          }
+          lastNoteSlug = n.slug;
+          window.__noteRenderedAt = Date.now();
+          setTimeout(
+            () => {
+              restoringRead = false;
+              // 首帧被锁住没写；解锁后补写一次，避免"打开后不滚动就丢位置"
+              if (spy && document.getElementById("mdBody")) spy();
+            },
+            restoringRead ? 1200 : 320,
+          );
         }
 
         function applyUnfinished(container, headingText) {
@@ -4973,7 +5082,14 @@
     <div class="rblock rblock-info"><h4>Note info</h4>
       <div class="info-line">${n.__chap ? `${n.__chap.label} · ` : ""}<span id="readPct">0%</span> · ${readTimeLabel(n.__chap || n)} · ${((n.__chap || n).chars / 1000).toFixed(1)}k 字 · ${n.in.size} 反链</div>
       <div class="prog"><i id="progBar"></i></div>
-      <div class="info-date">${fmtDate(n.created)} → ${fmtDate(n.updated || n.created)}</div></div>
+      <div class="info-date">${fmtDate(n.created)} → ${fmtDate(n.updated || n.created)}</div>${
+        (() => {
+          const rec = getRead(n.slug);
+          return rec && (rec.p || 0) >= 5 && (rec.p || 0) < 95
+            ? `<div class="info-resume"><a href="#" id="resumeRead">继续阅读 · 上次 ${rec.p}%</a></div>`
+            : "";
+        })()
+      }</div>
     ${chapList}
     ${ /* NOTE INFO 置顶 */
       showOutline
@@ -5010,6 +5126,12 @@
           );
           $("#rightBody").classList.add("note-mode");
           $("#rightBody").classList.toggle("chap-mode", !!inChapter);
+          const resumeEl = document.getElementById("resumeRead");
+          if (resumeEl)
+            resumeEl.addEventListener("click", (e) => {
+              e.preventDefault();
+              resumeRead(n);
+            });
           // 章节模式：章节列表变矮后，把当前章滚进可视区（垂直居中）
           if (inChapter) {
             const centerActiveChapter = () => {
@@ -5069,6 +5191,28 @@
             links.forEach((a) =>
               a.classList.toggle("active", a.dataset.id === cur),
             );
+            // 记住阅读位置（节流 500ms；恢复过程中不写，避免被冲成 0）
+            if (Date.now() - (window.__noteRenderedAt || 0) > 700) {
+              const now = Date.now();
+              if (!spy._saveAt || now - spy._saveAt > 500) {
+                spy._saveAt = now;
+                const el = cur ? document.getElementById(cur) : null;
+                const rl = document.getElementById("resumeRead");
+                if (rl) rl.textContent = `继续阅读 · 上次 ${p}%`;
+                saveRead(n.slug, {
+                  p,
+                  h: cur,
+                  off: el
+                    ? Math.round(
+                        el.getBoundingClientRect().top -
+                          view.getBoundingClientRect().top,
+                      )
+                    : 0,
+                  y: Math.round(view.scrollTop),
+                  c: n.__chapIndex >= 0 ? n.__chapIndex : null,
+                });
+              }
+            }
           };
           view.addEventListener("scroll", spy, {passive: true});
           view.addEventListener("scroll", updateScrollChrome, {passive: true});
@@ -5121,6 +5265,22 @@
               setTimeout(() => (b.textContent = "Copy"), 1600);
             }),
           );
+        }
+        function wireShare(n) {
+          const btn = view.querySelector(".share-btn");
+          if (!btn) return;
+          btn.addEventListener("click", async () => {
+            // 分享静态落地页（带 OG 卡），而不是 hash 路由
+            const url = `${location.origin}/n/${encodeURIComponent(n.slug)}/`;
+            try {
+              await navigator.clipboard.writeText(url);
+              toast("分享链接已复制（聊天软件会显示预览卡）");
+            } catch {
+              window.prompt("复制这个链接：", url);
+            }
+            btn.textContent = "已复制";
+            setTimeout(() => (btn.textContent = "分享"), 1600);
+          });
         }
         function wirePdf(n) {
           const btn = $("#pdfToggle"),
@@ -5821,6 +5981,8 @@
             location.replace(ROUTE_ALIAS[h]);
             return;
           }
+          // 非笔记路由要清掉"上一篇"，否则 首页→再打开同一篇 会被当成同篇切章
+          if (!/^#\/n\//.test(h)) lastNoteSlug = null;
           const q = h.split("?")[1] || "";
           const params = new URLSearchParams(q);
           const frag = params.get("h");
@@ -5910,9 +6072,12 @@
           });
         })();
 
-        addEventListener("load", () =>
-          setTimeout(() => MD.renderMath(document.body), 60),
-        );
+        addEventListener("load", () => {
+          setTimeout(() => MD.renderMath(document.body), 60);
+          if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js").catch(() => {});
+          }
+        });
       })();
     </script>
       <footer id="ft">
