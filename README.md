@@ -112,3 +112,11 @@ study-vault/
 ## Credits
 
 Original project and design by [@Sulcop5](https://github.com/Sulcop5) — [Sulcop5/Sulcop5.github.io](https://github.com/Sulcop5/Sulcop5.github.io). Site design mimics Claude's colour palette and Obsidian's interaction model. `ARCHITECTURE.md` is the original author's technical write-up, preserved here.
+
+## 备案号注入（部署相关）
+
+仓库里的 `index.html` 只保留占位符：`{{ICP}}`、`{{POLICE}}`、`{{POLICE_CODE}}`（同步时自动脱敏）。
+
+部署机上的 `beian.conf`（私有，不进仓库）保存真实值，`build-techsite.sh` 每次构建前调用
+`beian-render.py`：若页面里还有占位符就注入真实备案号。这样公开仓库里没有备案号，
+线上页面正常显示。
