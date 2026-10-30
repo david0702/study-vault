@@ -2938,6 +2938,19 @@
         white-space: nowrap;
       }
 
+
+      /* 公安备案官方图标对齐（2026-10-30） */
+      .beian-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        vertical-align: middle;
+      }
+      .beian-link img {
+        display: inline-block;
+        flex: 0 0 auto;
+      }
+
     </style>
   </head>
   <body data-left="on" data-right="on" data-width="normal">
@@ -3146,10 +3159,11 @@
           </div>
           <div class="sf-row">
             <a
+              class="beian-link"
               href="https://beian.mps.gov.cn/#/query/webSearch?code={{POLICE_CODE}}"
               target="_blank"
-              rel="noopener"
-              >{{POLICE}}</a
+              rel="noreferrer"
+              ><img src="/media/beian-police.png" alt="" width="14" height="15" />{{POLICE}}</a
             >
           </div>
         </div>
@@ -6116,10 +6130,11 @@
         <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{{ICP}}</a>
         <span class="sep">·</span>
         <a
+          class="beian-link"
           href="https://beian.mps.gov.cn/#/query/webSearch?code={{POLICE_CODE}}"
           target="_blank"
-          rel="noopener"
-          >{{POLICE}}</a
+          rel="noreferrer"
+          ><img src="/media/beian-police.png" alt="" width="13" height="14" />{{POLICE}}</a
         >
       </footer>
   </body>
