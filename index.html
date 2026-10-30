@@ -2916,6 +2916,28 @@
         background: transparent;
       }
 
+
+      /* ---------- 公安联网备案（2026-10-30） ---------- */
+      .side-foot {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        line-height: 1.7;
+      }
+      .side-foot .sf-row {
+        display: block;
+      }
+      #ft {
+        white-space: normal;
+        max-width: calc(100vw - 24px);
+        text-align: right;
+        line-height: 1.55;
+        padding: 5px 11px;
+      }
+      #ft .ft-line {
+        display: block;
+      }
+
     </style>
   </head>
   <body data-left="on" data-right="on" data-width="normal">
@@ -3115,11 +3137,21 @@
           <ul class="tree" id="tree"></ul>
         </div>
         <div class="side-foot" id="sideFt">
-          <a href="/feed.xml" title="RSS 订阅">RSS</a>
-          <span class="sf-sep">·</span>
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener"
-            >粤ICP备2026164320号</a
-          >
+          <div class="sf-row">
+            <a href="/feed.xml" title="RSS 订阅">RSS</a>
+            <span class="sf-sep">·</span>
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener"
+              >粤ICP备2026164320号</a
+            >
+          </div>
+          <div class="sf-row">
+            <a
+              href="https://beian.mps.gov.cn/#/query/webSearch?code=44030002018855"
+              target="_blank"
+              rel="noopener"
+              >粤公网安备44030002018855号</a
+            >
+          </div>
         </div>
       </aside>
 
@@ -6081,9 +6113,17 @@
       })();
     </script>
       <footer id="ft">
-      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2026164320号</a>
-      <span class="sep">·</span>
-      <a href="/">个人技术笔记</a>
+      <span class="ft-line"
+        ><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2026164320号</a></span
+      >
+      <span class="ft-line"
+        ><a
+          href="https://beian.mps.gov.cn/#/query/webSearch?code=44030002018855"
+          target="_blank"
+          rel="noopener"
+          >粤公网安备44030002018855号</a
+        ></span
+      >
     </footer>
   </body>
 </html>
