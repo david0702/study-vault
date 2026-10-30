@@ -2928,14 +2928,14 @@
         display: block;
       }
       #ft {
-        white-space: normal;
-        max-width: calc(100vw - 24px);
-        text-align: right;
-        line-height: 1.55;
-        padding: 5px 11px;
+        white-space: nowrap;
+        max-width: calc(100vw - 16px);
+        font-size: 10.5px;
+        line-height: 1.5;
+        padding: 3px 9px;
       }
-      #ft .ft-line {
-        display: block;
+      #ft a {
+        white-space: nowrap;
       }
 
     </style>
@@ -6113,17 +6113,14 @@
       })();
     </script>
       <footer id="ft">
-      <span class="ft-line"
-        ><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2026164320号</a></span
-      >
-      <span class="ft-line"
-        ><a
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2026164320号</a>
+        <span class="sep">·</span>
+        <a
           href="https://beian.mps.gov.cn/#/query/webSearch?code=44030002018855"
           target="_blank"
           rel="noopener"
           >粤公网安备44030002018855号</a
-        ></span
-      >
-    </footer>
+        >
+      </footer>
   </body>
 </html>
